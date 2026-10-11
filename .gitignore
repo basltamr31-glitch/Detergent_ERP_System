@@ -43,3 +43,9 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
+
+# Private release identities and generated distribution archives
+/android/key.properties
+*.jks
+*.keystore
+/artifacts/

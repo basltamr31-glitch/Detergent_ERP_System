@@ -1,30 +1,40 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-
-import 'package:detergent_factory/main.dart';
+import 'package:provider/provider.dart';
+import 'package:detergent_factory/l10n/app_localizations.dart';
+import 'package:detergent_factory/providers/production_provider.dart';
+import 'package:detergent_factory/providers/packaging_provider.dart';
+import 'package:detergent_factory/screens/app_shell.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
-
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
-
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
-
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
-  });
+  for (final width in [390.0, 1280.0]) {
+    for (final locale in ['en', 'ar']) {
+      testWidgets('Production navigation at $width in $locale', (tester) async {
+        tester.view.physicalSize = Size(width, 900);
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
+        await tester.pumpWidget(MultiProvider(
+          providers: [
+            ChangeNotifierProvider(create: (_) => ProductionProvider()),
+            ChangeNotifierProvider(create: (_) => PackagingProvider()),
+          ],
+          child: MaterialApp(
+            locale: Locale(locale),
+            supportedLocales: AppLocalizations.supportedLocales,
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            home: const AppShell(),
+          ),
+        ));
+        await tester.pumpAndSettle();
+        expect(find.byType(NavigationRail),
+            width >= 800 ? findsOneWidget : findsNothing);
+        expect(find.byType(BottomNavigationBar),
+            width < 800 ? findsOneWidget : findsNothing);
+        await tester.tap(find.byIcon(Icons.inventory_2).last);
+        await tester.pumpAndSettle();
+        expect(tester.takeException(), isNull);
+      });
+    }
+  }
 }

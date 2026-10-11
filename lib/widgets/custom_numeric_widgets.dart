@@ -1,11 +1,18 @@
+import '../services/money.dart';
 import 'package:flutter/material.dart';
 
 class CustomNumericField extends StatefulWidget {
   final String label;
   final double initialValue;
+  final bool enabled;
   final Function(double) onChanged;
 
-  const CustomNumericField({super.key, required this.label, this.initialValue = 0.0, required this.onChanged});
+  const CustomNumericField(
+      {super.key,
+      required this.label,
+      this.initialValue = 0.0,
+      this.enabled = true,
+      required this.onChanged});
 
   @override
   State<CustomNumericField> createState() => _CustomNumericFieldState();
@@ -17,16 +24,18 @@ class _CustomNumericFieldState extends State<CustomNumericField> {
   @override
   void initState() {
     super.initState();
-    _controller = TextEditingController(text: _formatValue(widget.initialValue));
+    _controller =
+        TextEditingController(text: _formatValue(widget.initialValue));
   }
 
   @override
   void didUpdateWidget(covariant CustomNumericField oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.initialValue != oldWidget.initialValue) {
-      if (double.tryParse(_controller.text) != widget.initialValue) {
+      if (double.tryParse(Money.normalize(_controller.text)) !=
+          widget.initialValue) {
         // Prevent cursor jumping or unnecessary updates if the user is currently typing and it evaluates to the same double.
-        // Wait, CustomNumericField is read-only and uses a showModalBottomSheet. 
+        // Wait, CustomNumericField is read-only and uses a showModalBottomSheet.
         // So we can safely overwrite it.
         _controller.text = _formatValue(widget.initialValue);
       }
@@ -55,11 +64,36 @@ class _CustomNumericFieldState extends State<CustomNumericField> {
   }
 
   @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    if (Theme.of(context).platform == TargetPlatform.windows ||
+        Theme.of(context).platform == TargetPlatform.linux ||
+        Theme.of(context).platform == TargetPlatform.macOS ||
+        MediaQuery.sizeOf(context).width >= 800) {
+      return TextField(
+          enabled: widget.enabled,
+          controller: _controller,
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          decoration: InputDecoration(labelText: widget.label),
+          onChanged: (value) {
+            final number = value.trim().isEmpty
+                ? 0.0
+                : double.tryParse(Money.normalize(value));
+            if (number != null && number.isFinite && number >= 0) {
+              widget.onChanged(number);
+            }
+          });
+    }
     return GestureDetector(
-      onTap: _showKeypad,
+      onTap: widget.enabled ? _showKeypad : null,
       child: AbsorbPointer(
         child: TextField(
+          enabled: widget.enabled,
           controller: _controller,
           readOnly: true,
           decoration: InputDecoration(
@@ -79,7 +113,8 @@ class _ModernKeypad extends StatefulWidget {
   final TextEditingController controller;
   final Function(double) onConfirm;
 
-  const _ModernKeypad({required this.label, required this.controller, required this.onConfirm});
+  const _ModernKeypad(
+      {required this.label, required this.controller, required this.onConfirm});
 
   @override
   State<_ModernKeypad> createState() => _ModernKeypadState();
@@ -89,19 +124,38 @@ class _ModernKeypadState extends State<_ModernKeypad> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom + 20, left: 20, right: 20, top: 20),
-      decoration: const BoxDecoration(color: Color(0xFFF2F2F2), borderRadius: BorderRadius.vertical(top: Radius.circular(30))),
+      padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+          left: 20,
+          right: 20,
+          top: 20),
+      decoration: const BoxDecoration(
+          color: Color(0xFFF2F2F2),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(30))),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(widget.label, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, fontFamily: 'Cairo')),
+          Text(widget.label,
+              style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                  fontFamily: 'Cairo')),
           const SizedBox(height: 15),
           // هذا هو حقل المعاينة الذي طلبته
           Container(
             padding: const EdgeInsets.symmetric(vertical: 12),
             width: double.infinity,
-            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), border: Border.all(color: Colors.blue, width: 2)),
-            child: Text(widget.controller.text.isEmpty ? '0' : widget.controller.text, textAlign: TextAlign.center, style: const TextStyle(fontSize: 30, fontWeight: FontWeight.bold, color: Colors.blue)),
+            decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.blue, width: 2)),
+            child: Text(
+                widget.controller.text.isEmpty ? '0' : widget.controller.text,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                    fontSize: 30,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.blue)),
           ),
           const SizedBox(height: 15),
           GridView.count(
@@ -111,15 +165,23 @@ class _ModernKeypadState extends State<_ModernKeypad> {
             crossAxisSpacing: 8,
             childAspectRatio: 2.2,
             children: [
-              ...['1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '0'].map((n) => _btn(n)),
+              ...['1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '0']
+                  .map((n) => _btn(n)),
               _btn('⌫', isDelete: true),
             ],
           ),
           const SizedBox(height: 15),
           ElevatedButton(
-            onPressed: () { Navigator.pop(context); widget.onConfirm(double.tryParse(widget.controller.text) ?? 0.0); },
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.blue, minimumSize: const Size(double.infinity, 50)),
-            child: const Text('تأكيد', style: TextStyle(color: Colors.white, fontSize: 18, fontFamily: 'Cairo')),
+            onPressed: () {
+              Navigator.pop(context);
+              widget.onConfirm(double.tryParse(widget.controller.text) ?? 0.0);
+            },
+            style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blue,
+                minimumSize: const Size(double.infinity, 50)),
+            child: const Text('تأكيد',
+                style: TextStyle(
+                    color: Colors.white, fontSize: 18, fontFamily: 'Cairo')),
           ),
         ],
       ),
@@ -127,17 +189,25 @@ class _ModernKeypadState extends State<_ModernKeypad> {
   }
 
   Widget _btn(String text, {bool isDelete = false}) => Material(
-    color: isDelete ? Colors.red[50] : Colors.white,
-    borderRadius: BorderRadius.circular(10),
-    child: InkWell(
-      onTap: () => setState(() {
-        if (isDelete) {
-          if (widget.controller.text.isNotEmpty) widget.controller.text = widget.controller.text.substring(0, widget.controller.text.length - 1);
-        } else {
-          widget.controller.text += text;
-        }
-      }),
-      child: Center(child: Text(text, style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: isDelete ? Colors.red : Colors.black))),
-    ),
-  );
+        color: isDelete ? Colors.red[50] : Colors.white,
+        borderRadius: BorderRadius.circular(10),
+        child: InkWell(
+          onTap: () => setState(() {
+            if (isDelete) {
+              if (widget.controller.text.isNotEmpty) {
+                widget.controller.text = widget.controller.text
+                    .substring(0, widget.controller.text.length - 1);
+              }
+            } else {
+              widget.controller.text += text;
+            }
+          }),
+          child: Center(
+              child: Text(text,
+                  style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: isDelete ? Colors.red : Colors.black))),
+        ),
+      );
 }

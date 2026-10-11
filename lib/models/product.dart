@@ -1,3 +1,4 @@
+import '../services/record_id.dart';
 import 'package:hive/hive.dart';
 
 class ProductAdapter extends TypeAdapter<Product> {
@@ -24,17 +25,19 @@ class ProductAdapter extends TypeAdapter<Product> {
 }
 
 class Product {
+  final String id;
   String name;
   double quantity;
   String unit;
   double unitPrice;
 
   Product({
+    String? id,
     required this.name,
     this.quantity = 0.0,
     this.unit = '',
     this.unitPrice = 0.0,
-  });
+  }) : id = id ?? RecordId.create();
 
   double get totalPrice => quantity * unitPrice;
 }

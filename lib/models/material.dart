@@ -1,3 +1,4 @@
+import '../services/record_id.dart';
 import 'package:hive/hive.dart';
 
 class MaterialAdapter extends TypeAdapter<Material> {
@@ -24,17 +25,21 @@ class MaterialAdapter extends TypeAdapter<Material> {
 }
 
 class Material {
+  final String id;
   String name;
   double quantity;
   String unit;
   double unitPrice;
+  String priceCurrency;
 
   Material({
+    String? id,
     required this.name,
     this.quantity = 0.0,
     this.unit = '',
     this.unitPrice = 0.0,
-  });
+    this.priceCurrency = '',
+  }) : id = id ?? RecordId.create();
 
   double get totalPrice => quantity * unitPrice;
 }

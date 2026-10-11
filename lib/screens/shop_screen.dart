@@ -1,5 +1,8 @@
+import 'trade_entry_screen.dart';
+import 'business_documents_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../widgets/storage_status.dart';
 import '../l10n/app_localizations.dart';
 import '../providers/shop_provider.dart';
 
@@ -9,11 +12,16 @@ class ShopScreen extends StatelessWidget {
   String _translateUnit(String unitKey, AppLocalizations loc) {
     if (unitKey.isEmpty) return '';
     switch (unitKey) {
-      case 'Piece': return loc.unitPiece;
-      case 'Box': return loc.unitBox;
-      case 'Carton': return loc.unitCarton;
-      case 'Package': return loc.unitPackage;
-      default: return unitKey;
+      case 'Piece':
+        return loc.unitPiece;
+      case 'Box':
+        return loc.unitBox;
+      case 'Carton':
+        return loc.unitCarton;
+      case 'Package':
+        return loc.unitPackage;
+      default:
+        return unitKey;
     }
   }
 
@@ -27,9 +35,25 @@ class ShopScreen extends StatelessWidget {
         title: Text(localizations.shopTitle),
         backgroundColor: Colors.green,
         foregroundColor: Colors.white,
+        actions: [
+          IconButton(
+              icon: const Icon(Icons.receipt_long),
+              tooltip: Localizations.localeOf(context).languageCode == 'ar'
+                  ? 'سجل المبيعات'
+                  : 'Sales history',
+              onPressed: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (_) =>
+                          const BusinessDocumentsScreen(initialTab: 2))))
+        ],
       ),
       body: Consumer<ShopProvider>(
         builder: (context, provider, child) {
+          if (!provider.isLoaded) {
+            return StorageStatus(
+                error: provider.loadError, onRetry: provider.initialize);
+          }
           final items = provider.products;
           if (items.isEmpty) {
             return Center(child: Text(localizations.noItemsInStock));
@@ -51,21 +75,41 @@ class ShopScreen extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(item.name, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                            Text(item.name,
+                                style: const TextStyle(
+                                    fontSize: 18, fontWeight: FontWeight.bold)),
                             const SizedBox(height: 8),
-                            Text('${localizations.availableQuantity}: ${item.quantity.toStringAsFixed(2)} ${_translateUnit(item.unit, localizations)}', style: const TextStyle(color: Colors.grey, fontSize: 16)),
+                            Text(
+                                '${localizations.availableQuantity}: ${item.quantity.toStringAsFixed(2)} ${_translateUnit(item.unit, localizations)}',
+                                style: const TextStyle(
+                                    color: Colors.grey, fontSize: 16)),
                             const SizedBox(height: 4),
-                            Text('${localizations.unitPriceLabel}: ${item.unitPrice.toStringAsFixed(2)}', style: const TextStyle(color: Colors.grey, fontSize: 14)),
+                            Text(
+                                '${localizations.unitPriceLabel}: ${item.unitPrice.toStringAsFixed(2)}',
+                                style: const TextStyle(
+                                    color: Colors.grey, fontSize: 14)),
                             const SizedBox(height: 4),
-                            Text('${localizations.totalValueLabel}: ${item.totalPrice.toStringAsFixed(2)}', style: const TextStyle(color: Colors.blue, fontSize: 16, fontWeight: FontWeight.bold)),
+                            Text(
+                                '${localizations.totalValueLabel}: ${item.totalPrice.toStringAsFixed(2)}',
+                                style: const TextStyle(
+                                    color: Colors.blue,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold)),
                           ],
                         ),
                       ),
                       ElevatedButton.icon(
-                        icon: const Icon(Icons.point_of_sale, size: 18, color: Colors.white),
-                        label: Text(localizations.sellBtn, style: const TextStyle(color: Colors.white)),
-                        style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
-                        onPressed: () => _showSellDialog(context, provider, item.name, localizations),
+                        icon: const Icon(Icons.point_of_sale,
+                            size: 18, color: Colors.white),
+                        label: Text(localizations.sellBtn,
+                            style: const TextStyle(color: Colors.white)),
+                        style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.green),
+                        onPressed: !context.watch<ShopProvider>().isLoaded ||
+                                context.watch<ShopProvider>().isSaving
+                            ? null
+                            : () => _showSellDialog(
+                                context, provider, item.name, localizations),
                       ),
                     ],
                   ),
@@ -78,13 +122,20 @@ class ShopScreen extends StatelessWidget {
       floatingActionButton: FloatingActionButton(
         backgroundColor: Colors.green,
         tooltip: localizations.addStock,
-        onPressed: () => _showAddStockDialog(context, Provider.of<ShopProvider>(context, listen: false), localizations),
+        onPressed: !context.watch<ShopProvider>().isLoaded ||
+                context.watch<ShopProvider>().isSaving
+            ? null
+            : () => _showAddStockDialog(
+                context,
+                Provider.of<ShopProvider>(context, listen: false),
+                localizations),
         child: const Icon(Icons.add_shopping_cart, color: Colors.white),
       ),
     );
   }
 
-  void _showAddStockDialog(BuildContext context, ShopProvider provider, AppLocalizations localizations) {
+  void _showAddStockDialog(BuildContext context, ShopProvider provider,
+      AppLocalizations localizations) {
     final nameController = TextEditingController();
     final quantityController = TextEditingController();
     final unitPriceController = TextEditingController();
@@ -94,117 +145,100 @@ class ShopScreen extends StatelessWidget {
     showDialog(
       context: context,
       builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setState) {
-            final qty = double.tryParse(quantityController.text) ?? 0.0;
-            final price = double.tryParse(unitPriceController.text) ?? 0.0;
-            final total = qty * price;
+        return StatefulBuilder(builder: (context, setState) {
+          final qty = double.tryParse(quantityController.text) ?? 0.0;
+          final price = double.tryParse(unitPriceController.text) ?? 0.0;
+          final total = qty * price;
 
-            return AlertDialog(
-              title: Text(localizations.addProductToShop),
-              content: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    TextField(
-                      controller: nameController,
-                      decoration: InputDecoration(labelText: localizations.productNameLabelShop),
-                    ),
-                    const SizedBox(height: 10),
-                    DropdownButtonFormField<String>(
-                      initialValue: selectedUnit,
-                      items: units.map((u) => DropdownMenuItem(value: u, child: Text(_translateUnit(u, localizations)))).toList(),
-                      onChanged: (val) {
-                        if (val != null) setState(() => selectedUnit = val);
-                      },
-                      decoration: InputDecoration(labelText: localizations.unitLabel),
-                    ),
-                    const SizedBox(height: 10),
-                    TextField(
-                      controller: quantityController,
-                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                      decoration: InputDecoration(labelText: localizations.quantity),
-                      onChanged: (_) => setState(() {}),
-                    ),
-                    const SizedBox(height: 10),
-                    TextField(
-                      controller: unitPriceController,
-                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                      decoration: InputDecoration(labelText: localizations.unitPriceLabel),
-                      onChanged: (_) => setState(() {}),
-                    ),
-                    const SizedBox(height: 15),
-                    Text('${localizations.totalValueLabel}: ${total.toStringAsFixed(2)}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                  ],
-                ),
+          return AlertDialog(
+            title: Text(localizations.addProductToShop),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: nameController,
+                    decoration: InputDecoration(
+                        labelText: localizations.productNameLabelShop),
+                  ),
+                  const SizedBox(height: 10),
+                  DropdownButtonFormField<String>(
+                    initialValue: selectedUnit,
+                    items: units
+                        .map((u) => DropdownMenuItem(
+                            value: u,
+                            child: Text(_translateUnit(u, localizations))))
+                        .toList(),
+                    onChanged: (val) {
+                      if (val != null) setState(() => selectedUnit = val);
+                    },
+                    decoration:
+                        InputDecoration(labelText: localizations.unitLabel),
+                  ),
+                  const SizedBox(height: 10),
+                  TextField(
+                    controller: quantityController,
+                    keyboardType:
+                        const TextInputType.numberWithOptions(decimal: true),
+                    decoration:
+                        InputDecoration(labelText: localizations.quantity),
+                    onChanged: (_) => setState(() {}),
+                  ),
+                  const SizedBox(height: 10),
+                  TextField(
+                    controller: unitPriceController,
+                    keyboardType:
+                        const TextInputType.numberWithOptions(decimal: true),
+                    decoration: InputDecoration(
+                        labelText: localizations.unitPriceLabel),
+                    onChanged: (_) => setState(() {}),
+                  ),
+                  const SizedBox(height: 15),
+                  Text(
+                      '${localizations.totalValueLabel}: ${total.toStringAsFixed(2)}',
+                      style: const TextStyle(
+                          fontWeight: FontWeight.bold, fontSize: 16)),
+                ],
               ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: Text(localizations.cancelBtn),
-                ),
-                ElevatedButton(
-                  onPressed: () {
-                    if (nameController.text.isNotEmpty && quantityController.text.isNotEmpty) {
-                      if (qty > 0) {
-                        provider.addProduct(nameController.text, qty, selectedUnit, price);
-                        Navigator.pop(context);
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text(localizations.cancelBtn),
+              ),
+              ElevatedButton(
+                onPressed: () async {
+                  if (nameController.text.isNotEmpty &&
+                      quantityController.text.isNotEmpty) {
+                    if (qty > 0) {
+                      try {
+                        await provider.addProduct(
+                            nameController.text, qty, selectedUnit, price);
+                        if (context.mounted) Navigator.pop(context);
+                      } catch (e) {
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text(e.toString())));
+                        }
                       }
                     }
-                  },
-                  child: Text(localizations.addStock),
-                ),
-              ],
-            );
-          }
-        );
+                  }
+                },
+                child: Text(localizations.addStock),
+              ),
+            ],
+          );
+        });
       },
     );
   }
 
-  void _showSellDialog(BuildContext context, ShopProvider provider, String productName, AppLocalizations localizations) {
-    final quantityController = TextEditingController();
-
-    showDialog(
-      context: context,
-      builder: (ctx) {
-        return AlertDialog(
-          title: Text(localizations.sellProductFromShop),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(productName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-              const SizedBox(height: 15),
-              TextField(
-                controller: quantityController,
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                decoration: InputDecoration(labelText: localizations.quantity),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: Text(localizations.cancelBtn),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                final quantity = double.tryParse(quantityController.text) ?? 0.0;
-                if (quantity > 0) {
-                  try {
-                    provider.sellProduct(productName, quantity);
-                    Navigator.pop(ctx);
-                  } catch (e) {
-                     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString().replaceAll("Exception: ", ""))));
-                  }
-                }
-              },
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
-              child: Text(localizations.sellBtn, style: const TextStyle(color: Colors.white)),
-            ),
-          ],
-        );
-      },
-    );
+  void _showSellDialog(BuildContext context, ShopProvider provider,
+      String productName, AppLocalizations localizations) {
+    Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (_) =>
+                TradeEntryScreen(purchase: false, productName: productName)));
   }
 }
