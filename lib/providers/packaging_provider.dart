@@ -170,7 +170,8 @@ class PackagingProvider extends PersistedDraft {
   @override
   void loadDraft(Map<String, dynamic> data) {
     StateSchema.draft('packaging', data);
-    _densityKgPerLiter = (data['density'] as num? ?? 0).toDouble();
+    _densityKgPerLiter =
+        data['version'] == 2 ? (data['density'] as num).toDouble() : 0;
     _packagesPerCarton = data['perCarton'] as int;
     _cartonPrice = (data['cartonUSD'] as num).toDouble();
     _cartonPriceSYP = (data['cartonSYP'] as num).toDouble();
@@ -183,7 +184,7 @@ class PackagingProvider extends PersistedDraft {
           price: (m['usd'] as num).toDouble(),
           priceSYP: (m['syp'] as num).toDouble(),
           hasCarton: m['carton'],
-          unit: m['unit'] ?? 'g',
+          unit: data['version'] == 2 ? m['unit'] : 'g',
           unitConfirmed: data['version'] == 2 ? m['unitConfirmed'] : false)));
     loadError = null;
     saveError = null;

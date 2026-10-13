@@ -1,4 +1,4 @@
-# Packaging costing guide — Windows 1.0.5
+# Production and packaging costing guide — Windows 1.0.6
 
 The production workspace calculates cost estimates from entered ingredients and output. It does not post stock valuation or cost of goods sold. Continue to use Operations and transfers for physical stock movements and Finance for posted journals.
 
@@ -19,7 +19,7 @@ Old packaging drafts used size / 1000 without recording a unit. Their values are
 
 With 500 g instead, fill mass is 0.5 kg and the bottle estimate is $1.30. That difference is why the unit and density must be explicit.
 
-Label costs can be entered whether or not a carton is selected. Unit totals include liquid, empty container and label. Carton totals multiply unit cost by bottle count and add the empty-carton cost. Labor, overhead, waste and accounting valuation are not included in these estimates yet.
+Label costs can be entered whether or not a carton is selected. Unit totals include liquid, empty container and label. Carton totals multiply unit cost by bottle count and add the empty-carton cost. Labor and overhead estimates entered for the batch are included in product cost. Waste valuation and posted inventory accounting remain pending.
 
 ## Completeness and currency
 
@@ -29,6 +29,13 @@ Enter a positive exchange rate before editing SYP conversion fields. Without one
 
 ## Upgrade and testing
 
-Inventory schema remains v12. Packaging drafts now use v2, including fill unit, confirmation and density. Older v1 drafts/backups remain readable. Export a business backup before upgrading and keep matching older data with an older executable if rollback is necessary; older builds cannot read new draft fields safely.
+Inventory schema remains v12. Packaging drafts use v2, including fill unit, confirmation and density. Production drafts also use v2 and record labor/overhead; old production v1 drafts load those charges as zero. Older v1 drafts/backups remain readable. Export a business backup before upgrading and keep matching older data with an older executable if rollback is necessary; older builds cannot read new draft fields safely.
 
 Automated checks cover equivalent mass/volume fills, measured density, invalid/overflow quantities, carton totals, v1 migration, persisted density/units, schema validation and English/Arabic operation at 320/1280 logical pixels. Verify the resulting PDF on your physical printer as part of business acceptance.
+
+
+## Batch labor and overhead
+
+Enter the total labor and overhead estimates for the entire batch in Production costing. The product cost per kilogram is (raw materials + labor + overhead) / actual good output in kilograms. These fields do not record payroll, supplier payments or financial journals. They do not rewrite posted production documents.
+
+For the example above, add $5 labor and $3 overhead. The batch estimate becomes $28, or $2.80/kg for 10 kg output. At 500 ml and density 1.2 kg/L, product cost per bottle becomes $1.68; adding $0.20 container and $0.10 label gives $1.98. Six bottles plus a $0.60 carton cost $12.48. A smaller good output increases unit cost while batch expenses stay unchanged.

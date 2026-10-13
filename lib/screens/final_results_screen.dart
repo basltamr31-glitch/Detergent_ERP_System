@@ -50,6 +50,12 @@ class FinalResultScreen extends StatelessWidget {
             _pdfRow(loc.finalProductName, prod.productName),
             _pdfRow(loc.totalProducedQuantity, '${prod.producedQuantity} kg'),
             _pdfRow(loc.approvedExchangeRate, '${prod.exchangeRate}'),
+            _pdfRow(isArabic ? 'المواد الخام (USD)' : 'Raw materials (USD)',
+                prod.materialCostUSD.toStringAsFixed(2)),
+            _pdfRow(isArabic ? 'عمالة الدفعة (USD)' : 'Batch labor (USD)',
+                prod.laborUSD.toStringAsFixed(2)),
+            _pdfRow(isArabic ? 'مصاريف الدفعة (USD)' : 'Batch overhead (USD)',
+                prod.overheadUSD.toStringAsFixed(2)),
             _pdfRow('Cost (\$)', '${prod.totalCostUSD.toStringAsFixed(2)} \$'),
             _pdfRow('Cost (SYP)', _syp(prod.totalCostSYP, prod.exchangeRate)),
             _pdfRow(loc.costPerKgUSD,
@@ -122,7 +128,7 @@ class FinalResultScreen extends StatelessWidget {
                   _pdfRow(isArabic ? 'وزن التعبئة (kg)' : 'Fill mass (kg)',
                       pack.fillMassKg(item).toStringAsFixed(6)),
                   _pdfRow(
-                      isArabic ? 'تكلفة السائل USD' : 'Liquid cost USD',
+                      isArabic ? 'تكلفة المنتج USD' : 'Product cost USD',
                       (pack.fillMassKg(item) * prod.totalCostUSDKG)
                           .toStringAsFixed(2)),
                   _pdfRow(
@@ -283,6 +289,15 @@ class FinalResultScreen extends StatelessWidget {
                           'Set a positive exchange rate to calculate SYP totals.',
                           'حدد سعر صرف موجباً لحساب الإجماليات بالليرة السورية.')),
                     _buildSectionCard(localizations.summaryGeneral, [
+                      _resultItem(
+                          t('Raw materials (USD)', 'المواد الخام (USD)'),
+                          productionProvider.materialCostUSD
+                              .toStringAsFixed(2)),
+                      _resultItem(t('Batch labor (USD)', 'عمالة الدفعة (USD)'),
+                          productionProvider.laborUSD.toStringAsFixed(2)),
+                      _resultItem(
+                          t('Batch overhead (USD)', 'مصاريف الدفعة (USD)'),
+                          productionProvider.overheadUSD.toStringAsFixed(2)),
                       _resultItem(localizations.finalProductName,
                           productionProvider.productName),
                       _resultItem(localizations.totalProducedQuantity,
@@ -332,7 +347,7 @@ class FinalResultScreen extends StatelessWidget {
                                     .fillMassKg(item)
                                     .toStringAsFixed(6)),
                             _resultItem(
-                                t('Liquid cost USD', 'تكلفة السائل USD'),
+                                t('Product cost USD', 'تكلفة المنتج USD'),
                                 (packagingProvider.fillMassKg(item) *
                                         productionProvider.totalCostUSDKG)
                                     .toStringAsFixed(2)),

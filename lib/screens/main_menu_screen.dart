@@ -33,6 +33,16 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
       Localizations.localeOf(context).languageCode == 'ar' ? ar : en;
   void open(Widget screen) =>
       Navigator.push(context, MaterialPageRoute(builder: (_) => screen));
+  Widget surface({required Widget child}) => Card(
+        elevation: 0,
+        color: Colors.white,
+        margin: EdgeInsets.zero,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: const BorderSide(color: Color(0xffdfe5ee)),
+        ),
+        child: child,
+      );
   Widget heading(String title, String subtitle) => Padding(
         padding: const EdgeInsets.only(top: 24, bottom: 12),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -49,7 +59,7 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
       );
   Widget metric(String label, String value, IconData icon, Color color,
           {String? detail}) =>
-      Card(
+      surface(
         child: Padding(
             padding: const EdgeInsets.all(18),
             child:
@@ -71,7 +81,7 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
       );
   Widget module(String id, String title, String subtitle, IconData icon,
           Color color, Widget page) =>
-      Card(
+      surface(
         child: InkWell(
           key: ValueKey('module-$id'),
           borderRadius: BorderRadius.circular(16),
@@ -357,7 +367,7 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
                         t('Most recent purchases and sales across currencies.',
                             'آخر المشتريات والمبيعات بجميع العملات.')),
                     if (recent.isEmpty)
-                      Card(
+                      surface(
                           child: Padding(
                               padding: const EdgeInsets.all(24),
                               child: Column(children: [
@@ -381,7 +391,7 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
                               ])))
                     else
                       for (final doc in recent.take(5))
-                        Card(
+                        surface(
                             child: ListTile(
                           onTap: () => open(BusinessDocumentsScreen(
                               initialTab:

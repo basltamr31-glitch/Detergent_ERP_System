@@ -11,6 +11,7 @@ class ProductionProvider extends PersistedDraft {
   String _productName = '';
   double _exchangeRate = 0.0; // افتراضي 1 لتجنب الضرب في صفر
   double _producedQuantity = 0.0;
+  double _laborUSD = 0, _overheadUSD = 0;
   final List<RawMaterial> _rawMaterials = [];
 
   String get productName => _productName;
@@ -19,8 +20,23 @@ class ProductionProvider extends PersistedDraft {
   List<RawMaterial> get rawMaterials =>
       List.unmodifiable(_rawMaterials.map((m) => m.copyWith()));
 
-  double get totalCostUSD => _rawMaterials.fold(
+  double get materialCostUSD => _rawMaterials.fold(
       0.0, (sum, item) => sum + (item.quantity * item.priceUSD));
+  double get laborUSD => _laborUSD;
+  double get overheadUSD => _overheadUSD;
+  double get totalCostUSD => materialCostUSD + _laborUSD + _overheadUSD;
+  void setLaborUSD(double value) {
+    StockValidation.price(value);
+    _laborUSD = value;
+    draftChanged();
+  }
+
+  void setOverheadUSD(double value) {
+    StockValidation.price(value);
+    _overheadUSD = value;
+    draftChanged();
+  }
+
   double get totalCostSYP => totalCostUSD * _exchangeRate;
   double get totalCostUSDKG =>
       _producedQuantity > 0 ? totalCostUSD / _producedQuantity : 0.0;
@@ -77,7 +93,9 @@ class ProductionProvider extends PersistedDraft {
 
   @override
   Map<String, dynamic> toDraft() => {
-        'version': 1,
+        'version': 2,
+        'laborUSD': _laborUSD,
+        'overheadUSD': _overheadUSD,
         'name': _productName,
         'rate': _exchangeRate,
         'quantity': _producedQuantity,
@@ -94,6 +112,9 @@ class ProductionProvider extends PersistedDraft {
   @override
   void loadDraft(Map<String, dynamic> data) {
     StateSchema.draft('production', data);
+    _laborUSD = data['version'] == 2 ? (data['laborUSD'] as num).toDouble() : 0;
+    _overheadUSD =
+        data['version'] == 2 ? (data['overheadUSD'] as num).toDouble() : 0;
     _productName = data['name'] as String;
     _exchangeRate = (data['rate'] as num).toDouble();
     _producedQuantity = (data['quantity'] as num).toDouble();

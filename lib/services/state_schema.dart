@@ -43,10 +43,14 @@ class StateSchema {
   }
 
   static void draft(String key, Map<String, dynamic> data) {
-    if (data['version'] != 1 && !(key == 'packaging' && data['version'] == 2)) {
+    if (![1, 2].contains(data['version'])) {
       throw const FormatException('Unsupported draft version.');
     }
     if (key == 'production') {
+      if (data['version'] == 2) {
+        number(data['laborUSD']);
+        number(data['overheadUSD']);
+      }
       text(data['name']);
       number(data['rate']);
       number(data['quantity']);

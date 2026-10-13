@@ -29,6 +29,8 @@ class ProductionManagementScreen extends StatelessWidget {
                 child: Column(
                   children: [
                     _buildMainCard(context, provider, localizations),
+                    const SizedBox(height: 16),
+                    _buildBatchCosts(context, provider),
                     const SizedBox(height: 15),
                     _buildMaterialsList(context, provider, localizations),
                     const SizedBox(height: 20),
@@ -79,7 +81,9 @@ class ProductionManagementScreen extends StatelessWidget {
           padding: const EdgeInsets.all(16),
           child: Column(
             children: [
-              TextField(
+              TextFormField(
+                key: const ValueKey('costing-product-name'),
+                initialValue: provider.productName,
                 onChanged: provider.setProductName,
                 decoration: InputDecoration(
                     labelText: loc.productNameLabel,
@@ -111,6 +115,39 @@ class ProductionManagementScreen extends StatelessWidget {
           ),
         ),
       );
+
+  Widget _buildBatchCosts(BuildContext context, ProductionProvider provider) {
+    final arabic = Localizations.localeOf(context).languageCode == 'ar';
+    String t(String en, String ar) => arabic ? ar : en;
+    return Card(
+        child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(t('Batch labor & overhead', 'عمالة ومصاريف الدفعة'),
+                    style: Theme.of(context)
+                        .textTheme
+                        .titleMedium
+                        ?.copyWith(fontWeight: FontWeight.w700)),
+                Text(t(
+                    'Enter total estimates for this batch, not per bottle. They contribute to the cost estimate without posting a financial journal.',
+                    'أدخل تقديرات إجمالية لهذه الدفعة، وليس لكل عبوة. تدخل في تقدير التكلفة دون تسجيل قيد مالي.')),
+                const SizedBox(height: 12),
+                CustomNumericField(
+                    key: const ValueKey('batch-labor'),
+                    label: t('Batch labor (USD)', 'عمالة الدفعة (USD)'),
+                    initialValue: provider.laborUSD,
+                    onChanged: provider.setLaborUSD),
+                const SizedBox(height: 12),
+                CustomNumericField(
+                    key: const ValueKey('batch-overhead'),
+                    label: t('Batch overhead (USD)', 'مصاريف الدفعة (USD)'),
+                    initialValue: provider.overheadUSD,
+                    onChanged: provider.setOverheadUSD),
+              ],
+            )));
+  }
 
   Widget _buildMaterialsList(BuildContext context, ProductionProvider provider,
           AppLocalizations loc) =>
