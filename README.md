@@ -63,6 +63,7 @@ Both costing drafts use v2; business storage uses schema v12 with older-state mi
 - [Production and packaging costing guide](COSTING_GUIDE.md)
 - [ChromeOS installation and complete test-pack instructions](CHROMEBOOK_GUIDE.md)
 - [Release, recovery and deployment requirements](RELEASE_GUIDE.md)
+- [Warehouse reorganization analysis (Arabic, before implementation)](WAREHOUSE_REORGANIZATION_ANALYSIS_AR.md)
 
 ## Project structure
 
