@@ -10,6 +10,9 @@ import 'package:detergent_factory/screens/main_menu_screen.dart';
 import 'package:detergent_factory/services/auth_service.dart';
 import 'package:detergent_factory/services/access_control.dart';
 import 'package:detergent_factory/services/windows_credentials.dart';
+import 'package:provider/provider.dart';
+import 'package:detergent_factory/providers/warehouse_provider.dart';
+import 'package:detergent_factory/providers/shop_provider.dart';
 
 void main() {
   testWidgets(
@@ -18,10 +21,18 @@ void main() {
     debugDefaultTargetPlatformOverride = TargetPlatform.windows;
     late Directory directory;
     late AuthService auth;
+    late WarehouseProvider warehouse;
+    late ShopProvider shop;
     await tester.runAsync(() async {
       directory = await Directory.systemTemp.createTemp('native_login_');
       Hive.init(directory.path);
       await Hive.openBox<String>('costing_drafts_v1');
+      // Prepare persisted stores in real async time; the app still creates its
+      // own providers, while widget pumps exercise the existing-user flow.
+      warehouse = WarehouseProvider();
+      shop = ShopProvider();
+      await warehouse.ready;
+      await shop.ready;
       AccessControl.enabled = true;
       AccessControl.user = null;
       auth = await AuthService.open();
@@ -47,7 +58,8 @@ void main() {
       await Hive.close();
       await directory.delete(recursive: true);
     });
-    await tester.pumpWidget(MyApp(auth: auth));
+    await tester
+        .pumpWidget(MyApp(auth: auth, warehouse: warehouse, shop: shop));
     await tester.pumpAndSettle();
     expect(find.byType(TextField), findsNothing);
     await tester.tap(find.byType(FilledButton));
@@ -74,6 +86,20 @@ void main() {
     expect(find.byType(LanguageSelectionScreen), findsOneWidget);
     expect(auth.user!['name'], 'باسل');
     await tester.tap(find.text('English'));
+    await tester.pump();
+    for (var i = 0;
+        i < 10 && find.byType(MainMenuScreen).evaluate().isEmpty;
+        i++) {
+      await tester.pump(const Duration(milliseconds: 100));
+    }
+    final dashboard = tester.element(find.byType(MainMenuScreen));
+    expect(dashboard.read<WarehouseProvider>(), same(warehouse));
+    expect(dashboard.read<ShopProvider>(), same(shop));
+    for (var i = 0; i < 10 && (!warehouse.isLoaded || !shop.isLoaded); i++) {
+      await tester.pump();
+    }
+    expect(warehouse.isLoaded, true);
+    expect(shop.isLoaded, true);
     await tester.pumpAndSettle();
     expect(find.byType(MainMenuScreen), findsOneWidget);
     auth.logout();

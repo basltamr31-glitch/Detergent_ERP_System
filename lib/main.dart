@@ -82,8 +82,10 @@ void main() async {
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key, required this.auth});
+  const MyApp({super.key, required this.auth, this.warehouse, this.shop});
   final AuthService auth;
+  final WarehouseProvider? warehouse;
+  final ShopProvider? shop;
 
   @override
   Widget build(BuildContext context) {
@@ -97,8 +99,8 @@ class MyApp extends StatelessWidget {
             create: (_) => PackagingProvider(
                 storage: Hive.box<String>('costing_drafts_v1'))),
         ChangeNotifierProvider(create: (_) => AppLanguageProvider()),
-        ChangeNotifierProvider(create: (_) => WarehouseProvider()),
-        ChangeNotifierProvider(create: (_) => ShopProvider()),
+        ChangeNotifierProvider(create: (_) => warehouse ?? WarehouseProvider()),
+        ChangeNotifierProvider(create: (_) => shop ?? ShopProvider()),
       ],
       child: Consumer2<AppLanguageProvider, AuthService>(
         builder: (context, langProvider, session, child) {
