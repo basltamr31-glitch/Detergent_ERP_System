@@ -12,7 +12,7 @@ Before upgrading, export and verify a business backup and preserve the full appl
 
 ## Android
 
-The installed SDK reports unaccepted licenses. The device owner must review and accept them before completing the Android toolchain; no license acceptance has been automated. Configure a permanent application ID and your existing/private release signing identity. Copy android/key.properties.example to the ignored android/key.properties and supply the keystore path and credentials privately. Never commit signing files or passwords.
+The Android debug build now completes successfully with the installed SDK; no license acceptance was automated. Any additional SDK licenses must be reviewed by the device owner if future toolchain changes require them. Configure a permanent application ID and your existing/private release signing identity before production distribution. Copy android/key.properties.example to the ignored android/key.properties and supply the keystore path and credentials privately. Never commit signing files or passwords.
 
 After the SDK is ready, use `flutter build apk --debug` for device testing. Signed releases require the owner application ID through Gradle, for example `ORG_GRADLE_PROJECT_erpApplicationId` in the build environment, plus the private signing properties, then `flutter build appbundle --release`. The build deliberately rejects missing release identity/signing configuration and never substitutes debug signing. Retain the same application ID and signing key for updates. See [Flutter Android release guidance](https://docs.flutter.dev/deployment/android).
 
@@ -32,7 +32,7 @@ Automated widget tests cover narrow phone and desktop widths in English/Arabic, 
 
 Tax jurisdiction, legal invoice fields, company identity and opening balances require business confirmation. PDFs are goods/payment documents and explicitly leave tax unset. Purchase journals use an expense/purchases account; automatic perpetual inventory valuation, cost of goods sold, tax posting, bank reconciliation, payroll, purchase-order approval chains, partial returns and shared-device synchronization are future work. Existing historical postings are not reconstructed as financial journals during migration. Review opening balances with the responsible accountant before relying on financial reports.
 
-Android build verification on this workspace failed while Gradle attempted to download required artifacts from dl.google.com (DNS/network failure). No APK was produced. Restore build-network access as well as completing SDK licenses and signing setup before retrying.
+The earlier Gradle download failure has been resolved. Android debug APK 1.0.6+7 was built on 13 October 2026 with ARM32, ARM64 and x86_64 libraries. Release signing and physical-device acceptance remain separate steps.
 
 ## Windows 1.0.1 startup repair
 
@@ -63,3 +63,12 @@ The workspace now opens a responsive dashboard with per-currency sales, document
 Production estimates now include explicit per-batch labor and overhead. Reports separate raw-material cost, labor and overhead, then derive cost per good-output kilogram and packaging estimates. Production draft v2 migrates old v1 charges as zero; inventory schema remains v12. Product names reload into the editor. Both drafts use v2; preserve matching backups for rollback to earlier builds. Tax, automatic inventory valuation/COGS, shared synchronization and Android release identity/device acceptance remain pending.
 
 Phase 1 and phase 2 were committed separately and verified. All 71 regression tests pass and analysis is clean; additional English/Arabic dashboard renders were inspected using actual fonts. See DEVELOPMENT_PHASES.md and COSTING_GUIDE.md. Windows packaging now reads the project version and rejects a mismatch with the executable metadata.
+
+
+## ChromeOS Android test build and acceptance pack (13 October 2026)
+
+A debug-signed installed Android build is available for Chromebook devices with Android support. The manifest permits a resizable window and does not require a touchscreen. Android numeric fields accept physical keyboard input at narrow widths and retain an optional touch keypad; Arabic decimal normalization is covered by a regression test.
+
+See [CHROMEBOOK_GUIDE.md](CHROMEBOOK_GUIDE.md) for approved ADB installation and the separate Google Play testing-release route. Google Play Store availability does not itself install our downloaded APK. The test build retains the development application ID; it is not a published or production-signed release. No physical Chromebook has been connected for acceptance.
+
+All 72 automated tests pass and static analysis is clean. The offline HTML acceptance pack contains 101 manual scenarios, the complete captured automated inventory, filters, notes and JSON/CSV results export/import. Generate it with scripts/generate-test-pack.py from completed Flutter machine output and the analyzer log; package the APK, guides and checklist with scripts/package-chromebook.ps1. The package records checksums and actual automated verification metadata. Binary and generated HTML artifacts remain local/ignored; source catalogs and scripts are committed.

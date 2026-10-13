@@ -1,0 +1,444 @@
+{
+  "version": "1.0.6+7",
+  "verification": {
+    "capturedAt": "2026-10-13T10:36:08.796188+00:00",
+    "testRunSuccess": true,
+    "resultsSha256": "f0214d95a52c88330867259b4dfe91b64b99ac33110e10fcda2f48cb1990e63e",
+    "analysisSha256": "eb96b591f2cb274fa10137072ab9f442735bc4a26e2bfef49f5029e11002b631",
+    "analysisStatus": "No issues found"
+  },
+  "tests": [
+    {
+      "name": "Authentication edits survive deletion, composition and rebuilds in en",
+      "file": "test/auth_editor_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "PBKDF2 result agrees with independent Python SHA256 implementation",
+      "file": "test/auth_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Owner setup, hashed passwords, role restrictions and owner retention persist",
+      "file": "test/auth_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Backup file is verified and existing files are not overwritten",
+      "file": "test/backup_draft_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Invalid data is rejected before any restore writes",
+      "file": "test/backup_draft_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Interrupted restore journal replays all stores and is cleared",
+      "file": "test/backup_draft_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Both costing drafts survive reopen with quantities and derived costs",
+      "file": "test/backup_draft_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Corrupt drafts report errors without replacing stored data",
+      "file": "test/backup_draft_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Raw safety copy preserves corrupt stores for manual recovery",
+      "file": "test/backup_draft_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Backup restore cancellation at 320.0 in en",
+      "file": "test/backup_ui_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Batch labor and overhead flow into yield and packaging estimates",
+      "file": "test/batch_costs_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Legacy charges default to zero and new estimates survive persistence and backup validation",
+      "file": "test/batch_costs_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Batch charges and restored product name at 320.0 in en",
+      "file": "test/batch_costs_ui_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Complete business cycle reconciles stock, money, roles, closure, refunds and restored history",
+      "file": "test/business_cycle_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Later payments persist, retry once and reject overpayment or reversal",
+      "file": "test/business_documents_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Party records link new documents and preserve historical names",
+      "file": "test/business_documents_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Purchasing posts once with stock references and blocks consumed-stock return",
+      "file": "test/business_documents_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Invalid correction rolls back reversal and successful correction retains original",
+      "file": "test/business_documents_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Sales snapshot price and currency and reversal restores stock once",
+      "file": "test/business_documents_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Excess payments, invalid currency and quantity cannot create sales",
+      "file": "test/business_documents_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Backups preserve document history and reject an unreconciled receipt",
+      "file": "test/business_documents_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Money parses Arabic decimals and uses exact half-up line rounding",
+      "file": "test/business_documents_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Production and correction retries do not consume ingredients twice",
+      "file": "test/business_documents_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Schema v2 inventory upgrades without inventing historical sales or receipts",
+      "file": "test/business_documents_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Backup restore cancellation at 320.0 in ar",
+      "file": "test/backup_ui_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Android/ChromeOS keyboard works in a narrow window and optional keypad preserves Arabic decimals",
+      "file": "test/chromebook_keyboard_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Backup restore cancellation at 1280.0 in en",
+      "file": "test/backup_ui_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Batch charges and restored product name at 1280.0 in en",
+      "file": "test/batch_costs_ui_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Backup restore cancellation at 1280.0 in ar",
+      "file": "test/backup_ui_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Explicit fill units, density and costing readiness at 320.0 in en",
+      "file": "test/costing_ui_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Batch charges and restored product name at 320.0 in ar",
+      "file": "test/batch_costs_ui_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Batch charges and restored product name at 1280.0 in ar",
+      "file": "test/batch_costs_ui_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Dashboard balances and module navigation at 320.0 in en",
+      "file": "test/dashboard_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Desktop keyboard normalizes Arabic numbers and clears stale values",
+      "file": "test/desktop_numeric_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Explicit fill units, density and costing readiness at 1280.0 in en",
+      "file": "test/costing_ui_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Receipt form and populated documents at 320.0 in en",
+      "file": "test/document_ui_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Explicit fill units, density and costing readiness at 320.0 in ar",
+      "file": "test/costing_ui_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Explicit fill units, density and costing readiness at 1280.0 in ar",
+      "file": "test/costing_ui_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Dashboard balances and module navigation at 1280.0 in en",
+      "file": "test/dashboard_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Multiple receipt lines persist and fail atomically on inconsistent units",
+      "file": "test/erp_operations_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Multi-item sale, actual refunds, return and journals reconcile",
+      "file": "test/erp_operations_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Transfers conserve batch quantity and cannot reverse consumed output",
+      "file": "test/erp_operations_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Transfer journal recovers both sides and rejects inconsistent backups",
+      "file": "test/erp_operations_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Period locks are paired and reopening retains history",
+      "file": "test/erp_operations_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Provider permissions and posted actor identity are enforced",
+      "file": "test/erp_operations_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Physical counts retain reason, prevent repeat changes and reconcile movements",
+      "file": "test/erp_operations_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Dashboard balances and module navigation at 320.0 in ar",
+      "file": "test/dashboard_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Approved recipe orders release once, transfer and trace sale lots with expiry protection",
+      "file": "test/erp_operations_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Production approval, transfer, finance and sign-in at 320.0 in en",
+      "file": "test/erp_ui_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Dashboard balances and module navigation at 1280.0 in ar",
+      "file": "test/dashboard_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Mass and volume fills use explicit units and measured density",
+      "file": "test/fill_costing_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Legacy fill sizes require confirmation; unit and density survive persistence and schema validation",
+      "file": "test/fill_costing_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Legacy warehouse migrates once and committed batch survives restart",
+      "file": "test/inventory_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Invalid and insufficient consumption leave inventory and history unchanged",
+      "file": "test/inventory_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Unit changes and duplicate submissions cannot alter stock",
+      "file": "test/inventory_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Batch editing and reversal reconcile stock after defensive reads",
+      "file": "test/inventory_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Authentication edits survive deletion, composition and rebuilds in ar",
+      "file": "test/auth_editor_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Unsupported schema reports startup error and retry recovers",
+      "file": "test/inventory_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Windows native credentials open the real ERP and sign back in after logout",
+      "file": "test/native_auth_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Receipt form and populated documents at 1280.0 in en",
+      "file": "test/document_ui_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Windows sharing and lock violations get actionable startup guidance",
+      "file": "test/startup_error_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Production navigation at 390.0 in en",
+      "file": "test/widget_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Production approval, transfer, finance and sign-in at 1280.0 in en",
+      "file": "test/erp_ui_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Receipt form and populated documents at 320.0 in ar",
+      "file": "test/document_ui_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Production navigation at 390.0 in ar",
+      "file": "test/widget_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Production navigation at 1280.0 in en",
+      "file": "test/widget_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Production navigation at 1280.0 in ar",
+      "file": "test/widget_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Receipt form and populated documents at 1280.0 in ar",
+      "file": "test/document_ui_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Production approval, transfer, finance and sign-in at 320.0 in ar",
+      "file": "test/erp_ui_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Sales entry posts a priced document in en",
+      "file": "test/document_ui_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Sales entry posts a priced document in ar",
+      "file": "test/document_ui_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Production approval, transfer, finance and sign-in at 1280.0 in ar",
+      "file": "test/erp_ui_test.dart",
+      "result": "success",
+      "skipped": false
+    }
+  ]
+}

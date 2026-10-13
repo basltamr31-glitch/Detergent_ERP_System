@@ -34,9 +34,7 @@ class _CustomNumericFieldState extends State<CustomNumericField> {
     if (widget.initialValue != oldWidget.initialValue) {
       if (double.tryParse(Money.normalize(_controller.text)) !=
           widget.initialValue) {
-        // Prevent cursor jumping or unnecessary updates if the user is currently typing and it evaluates to the same double.
-        // Wait, CustomNumericField is read-only and uses a showModalBottomSheet.
-        // So we can safely overwrite it.
+        // Retain the editor selection when a provider update matches the input.
         _controller.text = _formatValue(widget.initialValue);
       }
     }
@@ -74,12 +72,23 @@ class _CustomNumericFieldState extends State<CustomNumericField> {
     if (Theme.of(context).platform == TargetPlatform.windows ||
         Theme.of(context).platform == TargetPlatform.linux ||
         Theme.of(context).platform == TargetPlatform.macOS ||
+        Theme.of(context).platform == TargetPlatform.android ||
         MediaQuery.sizeOf(context).width >= 800) {
       return TextField(
           enabled: widget.enabled,
           controller: _controller,
           keyboardType: const TextInputType.numberWithOptions(decimal: true),
-          decoration: InputDecoration(labelText: widget.label),
+          decoration: InputDecoration(
+              labelText: widget.label,
+              suffixIcon: Theme.of(context).platform == TargetPlatform.android
+                  ? IconButton(
+                      tooltip:
+                          Localizations.localeOf(context).languageCode == 'ar'
+                              ? 'لوحة أرقام'
+                              : 'Numeric keypad',
+                      icon: const Icon(Icons.dialpad),
+                      onPressed: widget.enabled ? _showKeypad : null)
+                  : null),
           onChanged: (value) {
             final number = value.trim().isEmpty
                 ? 0.0
@@ -174,7 +183,9 @@ class _ModernKeypadState extends State<_ModernKeypad> {
           ElevatedButton(
             onPressed: () {
               Navigator.pop(context);
-              widget.onConfirm(double.tryParse(widget.controller.text) ?? 0.0);
+              widget.onConfirm(
+                  double.tryParse(Money.normalize(widget.controller.text)) ??
+                      0.0);
             },
             style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.blue,

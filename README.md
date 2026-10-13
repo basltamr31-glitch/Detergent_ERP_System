@@ -1,166 +1,74 @@
-# Detergent Factory Management App
+# Detergent Factory ERP
 
-A Flutter application for detergent factory owners with Arabic RTL support. Runs on **Android**, **Windows**, **Linux**, and **macOS**.
+An offline Flutter ERP for a detergent factory, retaining the Cairo font, Arabic RTL/English interface and module colors. Current version: **1.0.6+7**. Windows x64 release and Android debug builds have been compiled; Chromebook support uses the installed Android application on ChromeOS.
 
-## Features
+## Current workflows
 
-- Production Management
-- Multi-step form workflow
-- Dynamic tables with add/remove functionality
-- Automatic calculations
-- Offline-first architecture
-- PDF export capability
-- Multi-platform support (Android, Windows, Linux, macOS)
+- Responsive dashboard: per-currency figures, approval/quality queues, reconciliation and recent documents.
+- Customers/suppliers, multi-item purchases/sales, later payments and refunds.
+- Versioned production recipes, approvals, quality release, lots/expiry and FIFO allocation.
+- Finished-goods transfers with explicit packaging conversion, stock counts and immutable corrections.
+- Balanced per-currency journals, trial balance, document reconciliation and accounting-period locks.
+- Device-local owner enrollment, roles, salted password verification and sign-in lockout.
+- Production/packaging estimates with fill units, measured density, labor and overhead; bilingual PDFs.
+- Validated business backups, draft persistence, schema migration and durable recovery for paired writes.
 
-## Prerequisites
+Installations maintain independent accounts and business databases. A backup restore replaces the destination state; it does not merge concurrent changes or synchronize devices. Tax is unset until company/jurisdiction rules are confirmed. Costing estimates do not implement perpetual stock valuation or automatic cost of goods sold. See [ERP assessment](ERP_ASSESSMENT.md) for remaining business scope.
 
-- Flutter SDK (tested with 3.38.5 and Dart 3.10.4)
-- For Android: Android Studio with Android SDK
-- For Windows: Visual Studio with C++ development tools
-- For Linux: CMake, GTK development libraries, pkg-config
-- For macOS: Xcode
+## Install and test the current build
 
-## Getting Started
+Windows: extract the complete portable ZIP and launch `detergent_factory.exe` with its DLLs and data folder. On first use, create your own local owner with a password of at least 12 characters. Windows offers a native credential dialog; enter ERP account details there. The user confirmed this route reaches the menu.
 
-1. Install Flutter dependencies:
-```bash
+ChromeOS: install the Android test APK through a permitted ADB setup. It includes ARM32, ARM64 and x86_64 libraries, optional touchscreen support and a resizable window. Physical keyboard numeric entry works at narrow widths with an optional touch keypad. The APK is debug-signed and has not been published to Google Play. Follow [Chromebook installation and test instructions](CHROMEBOOK_GUIDE.md); Play Store availability alone does not install a downloaded APK.
+
+Open `ERP_Test_Pack_1.0.6.html` locally for **101 manual acceptance cases** and the full inventory of **72 passing automated tests**. Filter by platform/category, record status/notes and export JSON or CSV results. Physical Chromebook and printer acceptance remain pending. This HTML is a checklist for testing the installed ERP.
+
+Generated APK/ZIP/HTML files live under ignored `artifacts/` in the build workspace. Source catalogs and scripts are tracked under `qa/` and `scripts/`; binaries are not repository downloads. Review the [release guide](RELEASE_GUIDE.md) before installation/upgrades. See [development phases](DEVELOPMENT_PHASES.md) for verification history.
+
+## Build from source
+
+Toolchain tested with Flutter 3.38.5 and Dart 3.10.4. Windows builds require Visual Studio C++ tools; Android builds require the Android SDK/JDK. The current APK minimum Android API is 24. Linux/macOS platform folders also exist, but these targets have not been verified in this delivery.
+
+```sh
 flutter pub get
-```
-
-2. Check available devices:
-```bash
-flutter devices
-```
-
-## Running on Different Platforms
-
-### Android
-```bash
-# Connect an Android device or start an emulator
-flutter run
-# Or specify Android explicitly
-flutter run -d android
-```
-
-### Windows
-```bash
 flutter run -d windows
+flutter build windows --release --no-pub
+# Universal Android development APK for Android/ChromeOS:
+flutter build apk --debug --no-pub --target-platform android-arm,android-arm64,android-x64
 ```
 
-### Linux
-```bash
-flutter run -d linux
+Windows packaging: `powershell -File scripts/package-windows.ps1`. For ChromeOS packaging, first generate the test file, then run `powershell -File scripts/package-chromebook.ps1`. Packaging checks versions and preserves existing archives.
+
+Production Android releases require the owner's permanent application ID and private signing configuration described in [RELEASE_GUIDE.md](RELEASE_GUIDE.md). The build rejects missing identity/signing settings and never substitutes a debug key for release signing. Do not commit keystores or credentials.
+
+## Verify and regenerate the test pack
+
+Create `build/` if needed, then capture the actual analyzer and test-run output:
+
+```sh
+dart analyze lib test > build/chromebook_analysis.log
+flutter test --no-pub --machine > build/current_tests.jsonl
+python scripts/generate-test-pack.py
 ```
 
-### macOS
-```bash
-flutter run -d macos
-```
+The generator consumes completed Flutter machine output, validates the manual catalog and embeds the actual automated outcomes and analyzer status. It records log hashes and snapshot time in `qa/automated_inventory.json` and the HTML. The latest suite contains 72 tests with clean static analysis; mocks/temporary stores do not replace physical-device testing.
 
-## Building for Release
+## Backups and operating guides
 
-### Android APK
-```bash
-flutter build apk --release
-# Or for app bundle
-flutter build appbundle --release
-```
+Export a verified business backup regularly and keep a copy off the device. Leave the backup path blank for the application documents directory under `ERP Backups`, or copy backup text for manual device transfer. Existing filenames are not overwritten. Restore validates the payload, asks for confirmation and preserves current business data before replacement. Account credentials are device-local and excluded; preserve the full application-data directory separately for device recovery.
 
-### Windows
-```bash
-flutter build windows --release
-```
+Both costing drafts use v2; business storage uses schema v12 with older-state migration. Preserve backups before upgrades and do not run older releases against upgraded data. Interrupted coordinated operations resume before new posting. Keep one Windows ERP instance and do not share the live database folder across devices.
 
-### Linux
-```bash
-flutter build linux --release
-```
+- [Sample purchase-to-cash acceptance cycle](BUSINESS_CYCLE_TEST.md)
+- [Production and packaging costing guide](COSTING_GUIDE.md)
+- [ChromeOS installation and complete test-pack instructions](CHROMEBOOK_GUIDE.md)
+- [Release, recovery and deployment requirements](RELEASE_GUIDE.md)
 
-### macOS
-```bash
-flutter build macos --release
-```
+## Project structure
 
-## Project Structure
-
-- `lib/models/` - Data models
-- `lib/providers/` - State management (Provider)
-- `lib/screens/` - UI screens
-- `lib/widgets/` - Reusable widgets
-- `android/` - Android platform-specific code
-- `windows/` - Windows platform-specific code
-- `linux/` - Linux platform-specific code
-- `macos/` - macOS platform-specific code
-
-## Backups and saved drafts
-
-Use the backup icon in the main menu to create a verified backup of warehouse,
-shop stock, production costing and packaging costing. Leave the path blank to
-save in the application documents directory under `ERP Backups`, or enter a new
-writable file path. Existing filenames are not overwritten. Copy backup text to
-transfer it manually, including from Android, and retain a copy outside the device.
-
-To restore, provide a backup path or paste its backup text. The app validates it,
-asks for confirmation, and saves the current data before replacing it. If saving
-or restore fails, follow the retry message. Interrupted restores resume on startup.
-Current unreadable data is preserved in a raw recovery file for manual repair.
-
-Costing drafts save automatically and return after restart. A failed save displays
-a retry banner. Backups contain plain JSON and replace the complete local dataset;
-they are not a way to merge simultaneous changes from Android and Windows.
-
-See [ERP_ASSESSMENT.md](ERP_ASSESSMENT.md) for implemented reliability work and
-remaining business modules.
-
-## Business documents
-
-Open **Business documents** from the main menu to view production, purchase
-receipts and sales history. Receive a purchase to add raw stock with supplier,
-currency, price and payment details. Record a sale from this menu or a shop item;
-the document preserves the customer, quantity, price and currency. Select currency
-explicitly. USD and SYP amounts currently use two decimal places.
-
-Production corrections retain the original batch, post a reversal, and create a
-linked replacement. Cancelling a batch restores its ingredients and keeps the
-history. Trade document reversals require a reason; a purchase return is blocked
-if its stock has been consumed. Use the shop's history icon for sales records.
-Backups include these documents, and destructive history resets are disabled.
-
-These initial documents support one item each. Tax, later payments, financial
-journals and automatic finished-goods transfers remain on the ERP roadmap.
-
-## Platform-Specific Notes
-
-- **Android**: Minimum SDK version is set automatically by Flutter
-- **Windows**: Requires Windows 10 or later
-- **Linux**: Requires GTK 3.0 or later
-- **macOS**: Requires macOS 10.11 or later
-
-
-
-Later payments: open Business documents, choose Purchases or Sales, then Record
-payment on an active document. Enter the amount in its displayed currency and
-an optional reference. History retains each allocation and updates the balance.
-Backups include these payments. Reversal of documents with later payments is
-blocked pending refund reconciliation.
-
-
-Customers & suppliers: use the people icon on the main menu to create or edit
-contact records. Choose a saved active record when entering a receipt or sale.
-Posted documents retain their original party name. Inactive records remain in
-history. Outstanding balances shown on records include only documents linked
-to that record ID and are kept separate by currency. Existing manually named
-documents remain available in Business documents.
-
-## Current ERP baseline
-
-The application now includes multi-line purchases/sales, payments/refunds, customers/suppliers, finished-goods transfers, production orders with versioned recipes and approval/quality release, lot/expiry checks, stock counts, per-currency journals/trial balance, period locks, local accounts/roles, bilingual PDFs and validated backups. Storage schema is v12 with older-state migration. Android and Windows retain the original Cairo/Arabic/English template with responsive layouts.
-
-Read [ERP_ASSESSMENT.md](ERP_ASSESSMENT.md) for implemented scope and outstanding business features, and [RELEASE_GUIDE.md](RELEASE_GUIDE.md) before deployment. Windows packages can be created with scripts/package-windows.ps1. Signed Android release requires a confirmed application ID and private signing configuration; debug signing is never used for release. Devices currently operate independently without synchronization. Tax is deliberately unset until jurisdiction and company details are confirmed.
-
-
-Version 1.0.4 adds Finance document/ledger reconciliation. Follow [BUSINESS_CYCLE_TEST.md](BUSINESS_CYCLE_TEST.md) to validate a complete sample purchase-to-cash cycle with expected quantities and balances. Windows sign-in in 1.0.3 was confirmed by the user; automatic regression coverage is now 55 passing tests.
-
-Version 1.0.5 adds explicit packaging fill units, measured density for volume fills, legacy unit confirmation, costing readiness checks and a liquid/container/label breakdown. See [COSTING_GUIDE.md](COSTING_GUIDE.md). Packaging draft schema is v2; inventory schema remains v12. All 61 automated tests pass. These are cost estimates; automatic valuation/COGS and labor/overhead/waste posting remain pending.
-
-Version 1.0.6 introduces the responsive ERP dashboard and batch labor/overhead estimates. Both costing drafts use v2, with old v1 backup migration; inventory schema remains v12. See [DEVELOPMENT_PHASES.md](DEVELOPMENT_PHASES.md) for separately committed phases. All 71 regressions pass, with clean static analysis. Windows packaging reads the project version and verifies it matches the executable.
+- `lib/models/`, `lib/providers/`, `lib/services/`: domain state, persistence and ERP operations.
+- `lib/screens/`, `lib/widgets/`: bilingual responsive UI.
+- `test/`: automated regression suite.
+- `qa/`: manual catalog and captured automated inventory.
+- `scripts/`: version-checked distribution and test-pack generation.
+- `android/`, `windows/`: currently built native targets.

@@ -245,3 +245,11 @@ Packaging estimates now use explicit g/kg/ml/L units and measured density for vo
 The new ERP workspace adds live per-currency overview cards, grouped module navigation, approval/quality queues, period closure and document reconciliation status, recent records and useful empty/loading/error states. English/Arabic phone and desktop layouts were checked with enlarged text and actual font renders. Phase 1 was committed as b1d41c5.
 
 Batch labor and overhead estimates contribute to production and packaging unit costs, with separate components in the screen/PDF. Old production drafts migrate charges as zero, and names remain visible when reopening the editor. Both drafts use v2; inventory schema remains v12. These estimates do not post payroll, expense journals, stock valuation or COGS. Phase 2 was committed as 24f7a80. All 71 regressions pass; analysis is clean. Refer to DEVELOPMENT_PHASES.md for phase evidence and remaining work.
+
+## ChromeOS delivery and acceptance pack (13 October 2026)
+
+The previous Android dependency-download blocker is resolved: debug APK 1.0.6+7 compiles with ARM32, ARM64 and x86_64 libraries. Chromebook compatibility settings allow resizable windows without a touchscreen requirement. Android quantity/cost fields support physical keyboards in narrow windows and an optional touch keypad. All 72 automated tests pass; analysis is clean.
+
+The current release has a single offline HTML acceptance file with 101 manual scenarios and all automated test names/source paths/outcomes. It captures tester/device/build, status and notes, saves locally where possible and exports/imports results. Test/catalog and packaging sources are tracked; generated binary/HTML packages are local artifacts.
+
+Physical Chromebook acceptance and production Android signing/Play distribution remain open. Independent device databases still require explicit backup transfer; there is no live synchronization. Company/tax rules, reviewed opening balances, perpetual stock valuation/COGS, bank reconciliation, payroll and advanced procurement remain business/product work beyond this offline baseline. CHROMEBOOK_GUIDE.md explains installation and testing without treating ChromeOS as a browser application.

@@ -1,0 +1,1098 @@
+{
+  "version": "1.0.6+7",
+  "preparation": [
+    "Use sample data in an empty trial profile for exact balances. Do not reset or overwrite real business data.",
+    "Export a business backup before testing. Keep it off the device.",
+    "Create your own owner/test-user passwords; never record them in test results.",
+    "Use English labels for the walkthrough, then repeat the language/layout checks in Arabic.",
+    "Run the exact base cycle in this order: TC-070, TC-034, TC-039, TC-040, TC-048, TC-050, TC-058, TC-060, TC-061, TC-071. Check the USD 90 cash and stock totals before running the refund/return chain TC-065, TC-066 and TC-068.",
+    "Use separate trial items/documents for other mutation and rejection tests so they do not alter the base cycle. Category/ID order is a catalog, not an instruction to run every case against the same records.",
+    "The Chromebook APK is debug-signed for development testing. Play Store publication needs an owner-approved application ID, release signing and Play Console access."
+  ],
+  "cases": [
+    {
+      "id": "TC-001",
+      "category": "Installation and startup",
+      "title": "Windows complete folder",
+      "steps": [
+        "Extract the full Windows ZIP",
+        "Launch detergent_factory.exe with its DLLs and data folder beside it"
+      ],
+      "expected": "App opens without missing-runtime errors. Existing data remains in its original location.",
+      "platform": "Windows"
+    },
+    {
+      "id": "TC-002",
+      "category": "Installation and startup",
+      "title": "First launch and restart",
+      "steps": [
+        "On an empty trial profile create an owner account",
+        "Close and reopen the app",
+        "Sign in again"
+      ],
+      "expected": "Account persists and sign-in reaches language selection and the dashboard.",
+      "platform": "Both"
+    },
+    {
+      "id": "TC-003",
+      "category": "Installation and startup",
+      "title": "Duplicate Windows launch",
+      "steps": [
+        "Open the Windows executable again while it is running"
+      ],
+      "expected": "The existing window is brought forward. A second process does not open the same database.",
+      "platform": "Windows"
+    },
+    {
+      "id": "TC-004",
+      "category": "Installation and startup",
+      "title": "Offline operation",
+      "steps": [
+        "Disconnect the device from the internet",
+        "Open existing data and create a sample transaction"
+      ],
+      "expected": "Local sign-in, stock and documents work without a server. No cloud sync is implied.",
+      "platform": "Both"
+    },
+    {
+      "id": "TC-005",
+      "category": "Installation and startup",
+      "title": "Storage failure guidance",
+      "steps": [
+        "If a data-open/lock error occurs record its exact message",
+        "Close duplicate processes and retry without deleting files"
+      ],
+      "expected": "Actionable recovery guidance is shown; existing data is preserved.",
+      "platform": "Both"
+    },
+    {
+      "id": "TC-006",
+      "category": "ChromeOS Android installation",
+      "title": "Supported Android environment",
+      "steps": [
+        "Confirm Google Play Store/Android support on the Chromebook",
+        "Follow CHROMEBOOK_GUIDE.md for an approved APK installation route"
+      ],
+      "expected": "Android app runs as an installed ChromeOS application. The Windows EXE is not used.",
+      "platform": "ChromeOS"
+    },
+    {
+      "id": "TC-007",
+      "category": "ChromeOS Android installation",
+      "title": "Test APK identity",
+      "steps": [
+        "Inspect the APK name/version and installation source",
+        "Treat it as a debug-signed test build"
+      ],
+      "expected": "Version is 1.0.6, build 7. It is not presented as a production Play Store release.",
+      "platform": "ChromeOS"
+    },
+    {
+      "id": "TC-008",
+      "category": "ChromeOS Android installation",
+      "title": "Laptop without touch",
+      "steps": [
+        "Use keyboard, trackpad and mouse to sign in and navigate"
+      ],
+      "expected": "No touchscreen is required; interactive controls work with pointer input.",
+      "platform": "ChromeOS"
+    },
+    {
+      "id": "TC-009",
+      "category": "ChromeOS Android installation",
+      "title": "Window resizing",
+      "steps": [
+        "Resize to a narrow window, a large window and maximized mode"
+      ],
+      "expected": "Content reflows, remains scrollable and does not lose saved records or drafts.",
+      "platform": "ChromeOS"
+    },
+    {
+      "id": "TC-010",
+      "category": "ChromeOS Android installation",
+      "title": "Physical numeric keyboard",
+      "steps": [
+        "In a narrow ChromeOS window type and delete numeric values",
+        "Type Arabic decimal digits",
+        "Clear a value"
+      ],
+      "expected": "Native editing works, Arabic decimals normalize correctly and clearing does not retain stale positive values.",
+      "platform": "ChromeOS"
+    },
+    {
+      "id": "TC-011",
+      "category": "ChromeOS Android installation",
+      "title": "Optional touch keypad",
+      "steps": [
+        "Open the numeric keypad icon",
+        "Enter a decimal",
+        "Confirm"
+      ],
+      "expected": "The optional keypad works and does not alter an Arabic decimal to zero.",
+      "platform": "ChromeOS"
+    },
+    {
+      "id": "TC-012",
+      "category": "ChromeOS Android installation",
+      "title": "Suspend and resume",
+      "steps": [
+        "Leave a draft, suspend the Chromebook, then resume and reopen the app"
+      ],
+      "expected": "Saved drafts and posted data remain intact. Unsaved editor text is not represented as a posted transaction.",
+      "platform": "ChromeOS"
+    },
+    {
+      "id": "TC-013",
+      "category": "Authentication and roles",
+      "title": "Owner enrollment validation",
+      "steps": [
+        "Use an empty trial profile",
+        "Try blank username and a password shorter than 12 characters",
+        "Enter valid owner details"
+      ],
+      "expected": "Invalid enrollment is blocked with guidance; valid setup signs in without a default password.",
+      "platform": "Both"
+    },
+    {
+      "id": "TC-014",
+      "category": "Authentication and roles",
+      "title": "Editing credentials",
+      "steps": [
+        "Type, delete and retype letters in username/password",
+        "Toggle password visibility in the in-app editor"
+      ],
+      "expected": "Deleted letters do not reappear. Visible values match the submitted values.",
+      "platform": "Both"
+    },
+    {
+      "id": "TC-015",
+      "category": "Authentication and roles",
+      "title": "Windows native dialog",
+      "steps": [
+        "Use Enter credentials and sign in",
+        "Cancel the dialog once",
+        "Reopen and enter local ERP credentials"
+      ],
+      "expected": "Cancel changes nothing. Local ERP credentials work; Windows account credentials are not required.",
+      "platform": "Windows"
+    },
+    {
+      "id": "TC-016",
+      "category": "Authentication and roles",
+      "title": "Wrong credentials",
+      "steps": [
+        "Try an incorrect password for a secondary test account"
+      ],
+      "expected": "Access is rejected. No business route becomes accessible.",
+      "platform": "Both"
+    },
+    {
+      "id": "TC-017",
+      "category": "Authentication and roles",
+      "title": "Temporary lockout",
+      "steps": [
+        "Use a secondary disposable test account",
+        "Submit five wrong passwords",
+        "Retry immediately then after five minutes or an owner reset"
+      ],
+      "expected": "The immediate retry is locked; recovery works through the supported owner/reset or time window.",
+      "platform": "Both"
+    },
+    {
+      "id": "TC-018",
+      "category": "Authentication and roles",
+      "title": "Owner creates roles",
+      "steps": [
+        "Create manager, accountant, warehouse, cashier and viewer test users"
+      ],
+      "expected": "Users persist with their selected roles and active state.",
+      "platform": "Both"
+    },
+    {
+      "id": "TC-019",
+      "category": "Authentication and roles",
+      "title": "Viewer writes rejected",
+      "steps": [
+        "Sign in as viewer",
+        "Attempt a stock posting, sale, financial journal and restore"
+      ],
+      "expected": "All prohibited mutations are rejected; data and audit history remain unchanged.",
+      "platform": "Both"
+    },
+    {
+      "id": "TC-020",
+      "category": "Authentication and roles",
+      "title": "Warehouse approval rejected",
+      "steps": [
+        "As warehouse staff plan an order then try to approve it"
+      ],
+      "expected": "Warehouse posting is allowed; approval is rejected until performed by manager/owner.",
+      "platform": "Both"
+    },
+    {
+      "id": "TC-021",
+      "category": "Authentication and roles",
+      "title": "Cashier financial limits",
+      "steps": [
+        "As cashier sell and allocate a customer payment",
+        "Try a manual journal or stock adjustment"
+      ],
+      "expected": "Sales/payments succeed; restricted finance/warehouse operations are rejected.",
+      "platform": "Both"
+    },
+    {
+      "id": "TC-022",
+      "category": "Authentication and roles",
+      "title": "Period reopening limits",
+      "steps": [
+        "As accountant or manager try reopening a closed period",
+        "Repeat as owner with a reason"
+      ],
+      "expected": "Only the owner can reopen it; reason and actor remain recorded.",
+      "platform": "Both"
+    },
+    {
+      "id": "TC-023",
+      "category": "Authentication and roles",
+      "title": "Last owner protection",
+      "steps": [
+        "With only one active owner try deactivating or demoting that account"
+      ],
+      "expected": "The app preserves at least one active owner.",
+      "platform": "Both"
+    },
+    {
+      "id": "TC-024",
+      "category": "Authentication and roles",
+      "title": "Inactive user",
+      "steps": [
+        "Deactivate a secondary user",
+        "Try signing in as that user"
+      ],
+      "expected": "Inactive account cannot sign in. Its earlier posted history remains.",
+      "platform": "Both"
+    },
+    {
+      "id": "TC-025",
+      "category": "Authentication and roles",
+      "title": "Logout isolation",
+      "steps": [
+        "Sign out while on a business screen",
+        "Try Back navigation",
+        "Sign in again"
+      ],
+      "expected": "Business routes disappear; re-entry requires authentication and reaches a fresh route tree.",
+      "platform": "Both"
+    },
+    {
+      "id": "TC-026",
+      "category": "Dashboard and navigation",
+      "title": "Currency separation",
+      "steps": [
+        "Post trial documents in USD and SYP",
+        "Change overview currency"
+      ],
+      "expected": "Only the selected currency enters sales/balance/cash totals; no implicit conversion is performed.",
+      "platform": "Both"
+    },
+    {
+      "id": "TC-027",
+      "category": "Dashboard and navigation",
+      "title": "Document balances",
+      "steps": [
+        "Complete the sample business cycle below",
+        "Compare dashboard customer/supplier balances with Finance"
+      ],
+      "expected": "Balances agree with active documents after payments and refunds.",
+      "platform": "Both"
+    },
+    {
+      "id": "TC-028",
+      "category": "Dashboard and navigation",
+      "title": "Approval and quality queues",
+      "steps": [
+        "Create a draft production order",
+        "Approve it",
+        "Release it"
+      ],
+      "expected": "Dashboard queue counts move from approval to quality release and then clear for that order.",
+      "platform": "Both"
+    },
+    {
+      "id": "TC-029",
+      "category": "Dashboard and navigation",
+      "title": "Recent documents",
+      "steps": [
+        "Post a purchase and a sale",
+        "Click each entry under Recent documents"
+      ],
+      "expected": "Newest records show their own currency and open the relevant document tab.",
+      "platform": "Both"
+    },
+    {
+      "id": "TC-030",
+      "category": "Dashboard and navigation",
+      "title": "Grouped modules",
+      "steps": [
+        "Open every dashboard module and return"
+      ],
+      "expected": "Warehouse, operations, transfers, sales, parties, costing, documents, finance and authorized administration routes work.",
+      "platform": "Both"
+    },
+    {
+      "id": "TC-031",
+      "category": "Dashboard and navigation",
+      "title": "Loading and empty states",
+      "steps": [
+        "Open an empty trial dataset",
+        "Observe startup/loading and recent documents"
+      ],
+      "expected": "Unloaded data is not presented as confirmed zero balances. Empty history offers useful guidance.",
+      "platform": "Both"
+    },
+    {
+      "id": "TC-032",
+      "category": "Dashboard and navigation",
+      "title": "English and Arabic",
+      "steps": [
+        "Switch languages",
+        "Repeat navigation, dialogs and numeric entry"
+      ],
+      "expected": "Labels, RTL alignment, Cairo glyphs and values remain readable and consistent.",
+      "platform": "Both"
+    },
+    {
+      "id": "TC-033",
+      "category": "Dashboard and navigation",
+      "title": "Large text and display scaling",
+      "steps": [
+        "Increase system text/display scale",
+        "Resize the app",
+        "Scroll long forms and reports"
+      ],
+      "expected": "Controls remain reachable; essential content is not clipped or hidden behind the app bar.",
+      "platform": "Both"
+    },
+    {
+      "id": "TC-034",
+      "category": "Customers and suppliers",
+      "title": "Create and reopen records",
+      "steps": [
+        "Create Sample supplier and Sample customer with phone/address",
+        "Restart"
+      ],
+      "expected": "Contact data and stable records persist.",
+      "platform": "Both"
+    },
+    {
+      "id": "TC-035",
+      "category": "Customers and suppliers",
+      "title": "Duplicate master names",
+      "steps": [
+        "Try creating a duplicate name in the same role"
+      ],
+      "expected": "Duplicate is rejected; existing contact remains intact.",
+      "platform": "Both"
+    },
+    {
+      "id": "TC-036",
+      "category": "Customers and suppliers",
+      "title": "Rename preserves documents",
+      "steps": [
+        "Post a linked document then rename its contact"
+      ],
+      "expected": "Posted document retains the name snapshot and party ID; contact balances remain linked.",
+      "platform": "Both"
+    },
+    {
+      "id": "TC-037",
+      "category": "Customers and suppliers",
+      "title": "Deactivate contact",
+      "steps": [
+        "Deactivate a contact",
+        "Open a new trade form",
+        "Inspect earlier documents"
+      ],
+      "expected": "Inactive contact cannot be selected for a new linked posting; old history remains readable.",
+      "platform": "Both"
+    },
+    {
+      "id": "TC-038",
+      "category": "Customers and suppliers",
+      "title": "Outstanding contact balance",
+      "steps": [
+        "Post partial-payment documents for the sample customer/supplier",
+        "Allocate later payments"
+      ],
+      "expected": "Outstanding balances update by currency and never guess links from free-text names.",
+      "platform": "Both"
+    },
+    {
+      "id": "TC-039",
+      "category": "Purchases and raw inventory",
+      "title": "Multi-line receipt",
+      "steps": [
+        "Select Sample supplier",
+        "Receive Water 100 Kilogram at USD 1 and Fragrance 10 Kilogram at USD 5",
+        "Pay USD 30 initially"
+      ],
+      "expected": "Receipt total is USD 150, payable USD 120. Both stock lines increase once.",
+      "platform": "Both"
+    },
+    {
+      "id": "TC-040",
+      "category": "Purchases and raw inventory",
+      "title": "Supplier settlement",
+      "steps": [
+        "Allocate USD 120 against that receipt",
+        "Inspect document and supplier balance"
+      ],
+      "expected": "Payable becomes zero; original receipt content remains immutable and payment history is retained.",
+      "platform": "Both"
+    },
+    {
+      "id": "TC-041",
+      "category": "Purchases and raw inventory",
+      "title": "Retry idempotency",
+      "steps": [
+        "While a form is saving try submitting again",
+        "After an interrupted/retried posting inspect stock and document history"
+      ],
+      "expected": "A repeated request cannot double stock or create duplicate numbered documents.",
+      "platform": "Both"
+    },
+    {
+      "id": "TC-042",
+      "category": "Purchases and raw inventory",
+      "title": "Invalid quantity and price",
+      "steps": [
+        "Try zero/negative or malformed quantity and unsupported decimal precision in a receipt"
+      ],
+      "expected": "Invalid posting is rejected; no partial stock/documents/journals remain.",
+      "platform": "Both"
+    },
+    {
+      "id": "TC-043",
+      "category": "Purchases and raw inventory",
+      "title": "Unit mismatch atomicity",
+      "steps": [
+        "Create a multi-line receipt where one existing material uses an inconsistent unit"
+      ],
+      "expected": "Whole receipt fails atomically. Other valid lines do not change stock.",
+      "platform": "Both"
+    },
+    {
+      "id": "TC-044",
+      "category": "Purchases and raw inventory",
+      "title": "Purchase return after use",
+      "steps": [
+        "Consume some received material in production",
+        "Try returning the full receipt"
+      ],
+      "expected": "Return is blocked if remaining stock is insufficient.",
+      "platform": "Both"
+    },
+    {
+      "id": "TC-045",
+      "category": "Purchases and raw inventory",
+      "title": "Paid purchase return",
+      "steps": [
+        "Try reversing a paid purchase",
+        "Obtain/record an actual supplier refund then retry with enough stock"
+      ],
+      "expected": "Paid reversal is blocked until net paid amount is zero. Refunds and return retain source links.",
+      "platform": "Both"
+    },
+    {
+      "id": "TC-046",
+      "category": "Purchases and raw inventory",
+      "title": "Raw stock count",
+      "steps": [
+        "Count a separate trial material to a different actual quantity with a reason"
+      ],
+      "expected": "Recorded count and stock movement agree; before/after quantity and actor persist.",
+      "platform": "Both"
+    },
+    {
+      "id": "TC-047",
+      "category": "Purchases and raw inventory",
+      "title": "Zero stock count",
+      "steps": [
+        "Count a separate trial item to 0.00",
+        "Try a negative target"
+      ],
+      "expected": "Zero is accepted; negative target is rejected.",
+      "platform": "Both"
+    },
+    {
+      "id": "TC-048",
+      "category": "Production and traceability",
+      "title": "Plan versioned recipe",
+      "steps": [
+        "Plan Cleaner output 10 Kilogram, lot TEST-001, Water 9 and Fragrance 1"
+      ],
+      "expected": "Draft order links material IDs and a recipe snapshot. Raw stock is not consumed by planning.",
+      "platform": "Both"
+    },
+    {
+      "id": "TC-049",
+      "category": "Production and traceability",
+      "title": "Unique lot and valid expiry",
+      "steps": [
+        "Try reusing TEST-001",
+        "Try an invalid expiry date"
+      ],
+      "expected": "Duplicate lot and invalid date are rejected without a partial order.",
+      "platform": "Both"
+    },
+    {
+      "id": "TC-050",
+      "category": "Production and traceability",
+      "title": "Approval and release",
+      "steps": [
+        "Approve the Cleaner order as manager with a note",
+        "Release with a successful quality check and note"
+      ],
+      "expected": "Order becomes released. Water stock is 91 and Fragrance 9 after the sample receipt above.",
+      "platform": "Both"
+    },
+    {
+      "id": "TC-051",
+      "category": "Production and traceability",
+      "title": "Quality check required",
+      "steps": [
+        "Leave the QC checkbox unchecked or the quality note blank"
+      ],
+      "expected": "Release is blocked; stock and order history remain unchanged.",
+      "platform": "Both"
+    },
+    {
+      "id": "TC-052",
+      "category": "Production and traceability",
+      "title": "Insufficient materials",
+      "steps": [
+        "Approve an order whose ingredients exceed available stock",
+        "Attempt release"
+      ],
+      "expected": "No partial consumption/output posts; order can be reviewed without corrupted stock.",
+      "platform": "Both"
+    },
+    {
+      "id": "TC-053",
+      "category": "Production and traceability",
+      "title": "Recipe revision",
+      "steps": [
+        "Change ingredient quantities/output and plan a new order for the same product"
+      ],
+      "expected": "A new recipe version is retained. Earlier order snapshots are not rewritten.",
+      "platform": "Both"
+    },
+    {
+      "id": "TC-054",
+      "category": "Production and traceability",
+      "title": "Expiry control",
+      "steps": [
+        "Use an already expired production lot and attempt quality release/transfer"
+      ],
+      "expected": "Expired output is blocked by the supported expiry checks.",
+      "platform": "Both"
+    },
+    {
+      "id": "TC-055",
+      "category": "Production and traceability",
+      "title": "Cancel unposted order",
+      "steps": [
+        "Cancel a draft/approved order with a reason"
+      ],
+      "expected": "Cancellation event remains visible; raw stock is not consumed.",
+      "platform": "Both"
+    },
+    {
+      "id": "TC-056",
+      "category": "Production and traceability",
+      "title": "Immutable production correction",
+      "steps": [
+        "Reverse/correct a production record with a reason"
+      ],
+      "expected": "Original number/content and reversal/correction links remain; stock effects happen once.",
+      "platform": "Both"
+    },
+    {
+      "id": "TC-057",
+      "category": "Production and traceability",
+      "title": "Reversal while output transferred",
+      "steps": [
+        "Transfer output away then try reversing the batch"
+      ],
+      "expected": "Reversal is blocked until outstanding finished-goods transfers are returned.",
+      "platform": "Both"
+    },
+    {
+      "id": "TC-058",
+      "category": "Transfers, sales and payments",
+      "title": "Explicit packaging conversion",
+      "steps": [
+        "Transfer the complete 10 Kilogram Cleaner batch to 20 Piece Cleaner bottle, reference price USD 10"
+      ],
+      "expected": "Untransferred batch quantity becomes zero; shop stock becomes 20; transfer retains TEST-001 and explicit conversion.",
+      "platform": "Both"
+    },
+    {
+      "id": "TC-059",
+      "category": "Transfers, sales and payments",
+      "title": "Transfer availability",
+      "steps": [
+        "Try transferring more output than remains or a mismatched source unit"
+      ],
+      "expected": "Posting is rejected without changing either store.",
+      "platform": "Both"
+    },
+    {
+      "id": "TC-060",
+      "category": "Transfers, sales and payments",
+      "title": "Customer sale",
+      "steps": [
+        "Sell 4 Cleaner bottle at USD 10 to Sample customer",
+        "Receive USD 10 initially"
+      ],
+      "expected": "Sale total USD 40, receivable USD 30 and stock 16. The sale retains allocated lot references.",
+      "platform": "Both"
+    },
+    {
+      "id": "TC-061",
+      "category": "Transfers, sales and payments",
+      "title": "Customer settlement",
+      "steps": [
+        "Record USD 30 against the sale"
+      ],
+      "expected": "Receivable becomes zero and payment allocation persists.",
+      "platform": "Both"
+    },
+    {
+      "id": "TC-062",
+      "category": "Transfers, sales and payments",
+      "title": "Overpayment and refund limit",
+      "steps": [
+        "Try paying beyond the balance",
+        "Try refunding beyond net paid amount"
+      ],
+      "expected": "Both invalid amounts are rejected; no new allocation/journal is posted.",
+      "platform": "Both"
+    },
+    {
+      "id": "TC-063",
+      "category": "Transfers, sales and payments",
+      "title": "Multi-item sale atomicity",
+      "steps": [
+        "Sell two products with insufficient stock in one line"
+      ],
+      "expected": "Whole sale is rejected; the sufficient line is not decremented.",
+      "platform": "Both"
+    },
+    {
+      "id": "TC-064",
+      "category": "Transfers, sales and payments",
+      "title": "FIFO and expired lots",
+      "steps": [
+        "Create two transfer lots for a separate sample SKU",
+        "Sell stock",
+        "Include an expired remaining lot"
+      ],
+      "expected": "Allocation uses available eligible lots by FIFO and does not sell expired stock.",
+      "platform": "Both"
+    },
+    {
+      "id": "TC-065",
+      "category": "Transfers, sales and payments",
+      "title": "Paid sale reversal",
+      "steps": [
+        "Try reversing the paid USD 40 sale before refunding"
+      ],
+      "expected": "Reversal is rejected until actual money is refunded and net paid becomes zero.",
+      "platform": "Both"
+    },
+    {
+      "id": "TC-066",
+      "category": "Transfers, sales and payments",
+      "title": "Refund and full sales return",
+      "steps": [
+        "Record an actual USD 40 customer refund with reason",
+        "Reverse the full sale"
+      ],
+      "expected": "Stock returns to 20; receivable is zero after the return; original sale and refund remain in history.",
+      "platform": "Both"
+    },
+    {
+      "id": "TC-067",
+      "category": "Transfers, sales and payments",
+      "title": "Transferred lot return restriction",
+      "steps": [
+        "Try returning a lot whose units are already sold or removed by a stock count"
+      ],
+      "expected": "Return is blocked until the entire required lot stock is genuinely available; unrelated stock cannot substitute for it.",
+      "platform": "Both"
+    },
+    {
+      "id": "TC-068",
+      "category": "Transfers, sales and payments",
+      "title": "Reverse complete chain",
+      "steps": [
+        "After returning the sale, return the transfer",
+        "Reverse production",
+        "Record actual USD 150 supplier refund",
+        "Reverse the purchase"
+      ],
+      "expected": "Sample raw/shop stocks end at zero. All original, refund and reversal records remain. Opening cash returns to its initial amount.",
+      "platform": "Both"
+    },
+    {
+      "id": "TC-069",
+      "category": "Transfers, sales and payments",
+      "title": "Physical shop count",
+      "steps": [
+        "Reduce a separate sample shop item's count with a reason",
+        "Inspect lot availability"
+      ],
+      "expected": "Physical stock/count history agree. Negative counts reduce available lots; financial valuation is reviewed separately.",
+      "platform": "Both"
+    },
+    {
+      "id": "TC-070",
+      "category": "Finance and controls",
+      "title": "Reviewed opening cash",
+      "steps": [
+        "In an empty trial dataset post USD 200 debit 1000 Cash / credit 3000 Equity"
+      ],
+      "expected": "Opening journal balances; ledger cash is USD 200.",
+      "platform": "Both"
+    },
+    {
+      "id": "TC-071",
+      "category": "Finance and controls",
+      "title": "Purchase-to-cash reconciliation",
+      "steps": [
+        "Use the sample purchase, supplier payment, production, transfer, sale and customer payment"
+      ],
+      "expected": "After all payments, cash is USD 90, receivables USD 0 and payables USD 0. Stock is Water 91, Fragrance 9 and bottles 16.",
+      "platform": "Both"
+    },
+    {
+      "id": "TC-072",
+      "category": "Finance and controls",
+      "title": "Every journal balances",
+      "steps": [
+        "Inspect purchase, sale, payment, refund, reversal and manual journal records"
+      ],
+      "expected": "Debits equal credits per currency, sources and actors are retained, trial difference is zero.",
+      "platform": "Both"
+    },
+    {
+      "id": "TC-073",
+      "category": "Finance and controls",
+      "title": "Manual reconciliation difference",
+      "steps": [
+        "In a trial dataset add USD 1 debit Receivables / credit Equity without allocating a document"
+      ],
+      "expected": "Trial balance can still be zero, but document reconciliation shows the USD 1 difference for review.",
+      "platform": "Both"
+    },
+    {
+      "id": "TC-074",
+      "category": "Finance and controls",
+      "title": "Currency control accounts",
+      "steps": [
+        "Post a separate SYP opening/journal",
+        "Inspect USD and SYP summaries"
+      ],
+      "expected": "Currencies stay independent; balances are never combined without an explicit policy.",
+      "platform": "Both"
+    },
+    {
+      "id": "TC-075",
+      "category": "Finance and controls",
+      "title": "Close accounting period",
+      "steps": [
+        "Close through the date supported by Finance with a reason",
+        "Try a new posting in that period"
+      ],
+      "expected": "Posting is blocked in both stores and closure is persisted/audited.",
+      "platform": "Both"
+    },
+    {
+      "id": "TC-076",
+      "category": "Finance and controls",
+      "title": "Owner reopening",
+      "steps": [
+        "Reopen as owner with a reason",
+        "Retry a valid trial posting"
+      ],
+      "expected": "Posting becomes available; reopening event retains actor/reason.",
+      "platform": "Both"
+    },
+    {
+      "id": "TC-077",
+      "category": "Finance and controls",
+      "title": "No false profit claim",
+      "steps": [
+        "Inspect finance/dashboard after manufacturing and sales"
+      ],
+      "expected": "The app presents cash, balances and journals, without implying automatic inventory valuation, COGS or a complete profit statement.",
+      "platform": "Both"
+    },
+    {
+      "id": "TC-078",
+      "category": "Costing and packaging",
+      "title": "Restore costing inputs",
+      "steps": [
+        "Save product name, output and ingredients",
+        "Leave the costing workspace and return",
+        "Restart"
+      ],
+      "expected": "Draft data reloads, including the visible product name.",
+      "platform": "Both"
+    },
+    {
+      "id": "TC-079",
+      "category": "Costing and packaging",
+      "title": "Base material estimate",
+      "steps": [
+        "Set output 10 kg",
+        "Enter 2 kg concentrate at USD 10/kg"
+      ],
+      "expected": "Material estimate is USD 20 and product cost is USD 2/kg before extra batch charges.",
+      "platform": "Both"
+    },
+    {
+      "id": "TC-080",
+      "category": "Costing and packaging",
+      "title": "Labor and overhead",
+      "steps": [
+        "Enter batch labor USD 5 and overhead USD 3"
+      ],
+      "expected": "Total batch estimate becomes USD 28 and cost per good-output kilogram USD 2.80; breakdown shows all three components.",
+      "platform": "Both"
+    },
+    {
+      "id": "TC-081",
+      "category": "Costing and packaging",
+      "title": "Measured volume fill",
+      "steps": [
+        "Set 500 ml, density 1.2 kg/L, container USD 0.20 and label USD 0.10"
+      ],
+      "expected": "Fill mass is 0.6 kg; with the USD 2.80/kg batch estimate bottle cost is USD 1.98.",
+      "platform": "Both"
+    },
+    {
+      "id": "TC-082",
+      "category": "Costing and packaging",
+      "title": "Carton costing",
+      "steps": [
+        "Set 6 bottles/carton and empty carton USD 0.60"
+      ],
+      "expected": "Using the example above carton estimate is USD 12.48.",
+      "platform": "Both"
+    },
+    {
+      "id": "TC-083",
+      "category": "Costing and packaging",
+      "title": "Mass versus volume",
+      "steps": [
+        "Compare 500 g and 500 ml at density 1.2"
+      ],
+      "expected": "Mass is 0.5 kg for grams and 0.6 kg for millilitres; displayed unit and estimates differ correctly.",
+      "platform": "Both"
+    },
+    {
+      "id": "TC-084",
+      "category": "Costing and packaging",
+      "title": "Missing density",
+      "steps": [
+        "Select ml/L and leave density zero"
+      ],
+      "expected": "Cost report is blocked with guidance; no implicit 1 kg/L density is assumed.",
+      "platform": "Both"
+    },
+    {
+      "id": "TC-085",
+      "category": "Costing and packaging",
+      "title": "Legacy unit confirmation",
+      "steps": [
+        "Load an old v1 packaging draft",
+        "Confirm grams or choose the correct unit"
+      ],
+      "expected": "Values are preserved, but unconfirmed legacy sizes cannot silently produce a report.",
+      "platform": "Both"
+    },
+    {
+      "id": "TC-086",
+      "category": "Costing and packaging",
+      "title": "Unconfigured exchange rate",
+      "steps": [
+        "Leave exchange rate at zero",
+        "Inspect SYP price fields/results"
+      ],
+      "expected": "SYP conversion editing is disabled and reports show unavailable amounts rather than a misleading converted zero.",
+      "platform": "Both"
+    },
+    {
+      "id": "TC-087",
+      "category": "Costing and packaging",
+      "title": "Configured exchange rate",
+      "steps": [
+        "Set rate 100 for the USD 28 batch"
+      ],
+      "expected": "SYP total is 2800 and per-kg estimate 280; underlying posted ledger currencies are not converted.",
+      "platform": "Both"
+    },
+    {
+      "id": "TC-088",
+      "category": "Costing and packaging",
+      "title": "Yield sensitivity",
+      "steps": [
+        "Change good output from 10 kg to 8 kg while expenses remain USD 28"
+      ],
+      "expected": "Cost per kg rises from USD 2.80 to USD 3.50; batch cost remains USD 28.",
+      "platform": "Both"
+    },
+    {
+      "id": "TC-089",
+      "category": "Costing and packaging",
+      "title": "Incomplete/overflow input",
+      "steps": [
+        "Leave missing names, zero output or zero fill size",
+        "Try out-of-range amounts"
+      ],
+      "expected": "Report shows input/range guidance rather than invalid zero/infinite totals.",
+      "platform": "Both"
+    },
+    {
+      "id": "TC-090",
+      "category": "Costing and packaging",
+      "title": "Draft charges are estimates",
+      "steps": [
+        "Compare Finance before/after changing labor, overhead and packaging estimates"
+      ],
+      "expected": "Costing edits do not post payroll, cash, stock valuation or financial journals.",
+      "platform": "Both"
+    },
+    {
+      "id": "TC-091",
+      "category": "Documents, printing and backup",
+      "title": "Document search and lines",
+      "steps": [
+        "Search by number, contact and item",
+        "Open multi-line purchase/sale details"
+      ],
+      "expected": "Matching records and every line are visible; values and actors match the posting snapshots.",
+      "platform": "Both"
+    },
+    {
+      "id": "TC-092",
+      "category": "Documents, printing and backup",
+      "title": "Document PDF",
+      "steps": [
+        "Generate a sale PDF after later payments/refunds",
+        "Save or print"
+      ],
+      "expected": "Totals, currency, allocation history and balance are correct. It does not invent tax configuration.",
+      "platform": "Both"
+    },
+    {
+      "id": "TC-093",
+      "category": "Documents, printing and backup",
+      "title": "Bilingual cost PDF",
+      "steps": [
+        "Generate the costing example in English and Arabic"
+      ],
+      "expected": "Cairo text and RTL are readable; fill units, density and raw/labor/overhead costs match the screen.",
+      "platform": "Both"
+    },
+    {
+      "id": "TC-094",
+      "category": "Documents, printing and backup",
+      "title": "Physical printing",
+      "steps": [
+        "Print a document on the actual device/printer"
+      ],
+      "expected": "No clipped essential content; numbers and glyphs are readable. Record printer/device details and any failure.",
+      "platform": "Both"
+    },
+    {
+      "id": "TC-095",
+      "category": "Documents, printing and backup",
+      "title": "Verified backup creation",
+      "steps": [
+        "Create a backup",
+        "Copy/export it off the device",
+        "Read the returned completion message"
+      ],
+      "expected": "Validated business data and costing drafts are preserved with checksum/version information.",
+      "platform": "Both"
+    },
+    {
+      "id": "TC-096",
+      "category": "Documents, printing and backup",
+      "title": "Restore cancellation",
+      "steps": [
+        "Select valid backup text/file",
+        "Cancel the confirmation"
+      ],
+      "expected": "Current data does not change and no replacement is performed.",
+      "platform": "Both"
+    },
+    {
+      "id": "TC-097",
+      "category": "Documents, printing and backup",
+      "title": "Valid restore",
+      "steps": [
+        "In a trial dataset save a backup then change sample data",
+        "Restore with owner confirmation"
+      ],
+      "expected": "A safety backup is preserved first; restored stock, history, payments, recipes, periods and drafts agree with the snapshot.",
+      "platform": "Both"
+    },
+    {
+      "id": "TC-098",
+      "category": "Documents, printing and backup",
+      "title": "Corrupt backup rejection",
+      "steps": [
+        "Alter backup text or its checksum",
+        "Attempt validation/restore"
+      ],
+      "expected": "Corrupt payload is rejected before overwrite; current business state remains intact.",
+      "platform": "Both"
+    },
+    {
+      "id": "TC-099",
+      "category": "Documents, printing and backup",
+      "title": "Cross-device business transfer",
+      "steps": [
+        "Copy backup text from Windows to Chromebook",
+        "Use a separately enrolled local owner on the destination to restore"
+      ],
+      "expected": "Business data transfers without live synchronization. Local account credentials do not transfer with the business backup.",
+      "platform": "Both"
+    },
+    {
+      "id": "TC-100",
+      "category": "Documents, printing and backup",
+      "title": "Interrupted recovery",
+      "steps": [
+        "On a trial device interrupt a restore/paired transfer then reopen",
+        "Follow recovery guidance"
+      ],
+      "expected": "Pending journal is replayed/retried before normal posting. Do not delete lock/database files as a workaround.",
+      "platform": "Both"
+    },
+    {
+      "id": "TC-101",
+      "category": "Documents, printing and backup",
+      "title": "Audit preservation",
+      "steps": [
+        "Inspect original records after corrections, counts, refunds, returns and master edits"
+      ],
+      "expected": "Original numbered business content and audit links are retained; there is no destructive history reset.",
+      "platform": "Both"
+    }
+  ]
+}

@@ -21,3 +21,11 @@ Phase 2 verification: all 71 regression tests pass; static analysis has no findi
 Release metadata matches the application version. The packaging script reads the project version by default and rejects a mismatched executable, preserving existing archives. The complete runtime/assets bundle includes operating, costing and phase guides and a SHA-256 manifest. Build and archive verification are recorded when packaging completes; binaries remain local/ignored rather than committed as source.
 
 Phase 3 build verification: Windows x64 release 1.0.6+7 compiled successfully. A deliberately mismatched package version was rejected before archive creation. Distribution checks cover complete runtime/assets, included guides, archive integrity and the generated SHA-256 manifest.
+
+## Phase 4 — ChromeOS Android build and complete test pack
+
+The installed Android route supports Chromebook devices with Google Play/Android capability. The compiled APK contains armeabi-v7a, arm64-v8a and x86_64 libraries, a resizable activity and optional touchscreen/faketouch requirements. Native numeric editing now accepts physical keyboards even in narrow Android windows, with an optional touch keypad and normalized Arabic decimals. Windows keeps its existing release and credential workflow.
+
+Android debug APK 1.0.6+7 built successfully. All 72 regressions pass, including the new narrow Android keyboard/keypad check; static analysis has no findings. APK identity, version, architectures, compiled resize/touch settings and signing were inspected. The offline acceptance file contains 101 manual cases and the complete captured automated inventory. Its persistence, platform/search filters, JSON/CSV export, valid/invalid import, reset and narrow layout were verified in isolated headless Chrome.
+
+Source-controlled catalogs and generation/packaging scripts reproduce the delivery. Packages include installation/workflow guides and SHA-256 manifests and refuse to overwrite existing archives. Physical Chromebook installation, suspend/resume, keyboard behavior and printing remain pending device acceptance. Approved ADB sideloading is the current installation route; Play distribution still needs the owner's account, permanent application ID and private release signing identity. See CHROMEBOOK_GUIDE.md.
