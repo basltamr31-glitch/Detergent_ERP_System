@@ -15,3 +15,9 @@ Phase 1 verification: all 65 automated tests pass; static analysis reports no is
 Phase 2 validation covers batch charges, yield-dependent unit costs, volume-fill estimates, old drafts, persistence and backup schema checks, plus Arabic/English input at phone and desktop widths.
 
 Phase 2 verification: all 71 regression tests pass; static analysis has no findings. Two additional dashboard render checks were inspected with actual Cairo and Material icon fonts. Production and packaging drafts use v2; old v1 fields are read only according to their original schema. Inventory schema remains v12.
+
+## Phase 3 — Windows release 1.0.6
+
+Release metadata matches the application version. The packaging script reads the project version by default and rejects a mismatched executable, preserving existing archives. The complete runtime/assets bundle includes operating, costing and phase guides and a SHA-256 manifest. Build and archive verification are recorded when packaging completes; binaries remain local/ignored rather than committed as source.
+
+Phase 3 build verification: Windows x64 release 1.0.6+7 compiled successfully. A deliberately mismatched package version was rejected before archive creation. Distribution checks cover complete runtime/assets, included guides, archive integrity and the generated SHA-256 manifest.

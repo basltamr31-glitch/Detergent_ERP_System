@@ -4,7 +4,7 @@ This release is an offline factory ERP baseline for independent Windows and Andr
 
 ## Windows
 
-Build with `flutter build windows --release --no-pub`, then run `powershell -File scripts/package-windows.ps1 -Version 1.0.0`. Extract the complete ZIP into a writable installation folder and launch detergent_factory.exe. Keep the DLLs and data directory beside the executable. The package manifest records SHA-256 and build time. This portable package is unsigned; an installer and publisher signing certificate are still release decisions. Follow Flutter's [Windows distribution requirements](https://docs.flutter.dev/deployment/windows) for the Visual C++ runtime on a clean target PC.
+Build with `flutter build windows --release --no-pub`, then run `powershell -File scripts/package-windows.ps1`. Extract the complete ZIP into a writable installation folder and launch detergent_factory.exe. Keep the DLLs and data directory beside the executable. The package manifest records SHA-256 and build time. This portable package is unsigned; an installer and publisher signing certificate are still release decisions. Follow Flutter's [Windows distribution requirements](https://docs.flutter.dev/deployment/windows) for the Visual C++ runtime on a clean target PC.
 
 On first launch, create the local owner account with a password of at least 12 characters. The owner can create manager, accountant, warehouse, cashier and viewer accounts. Credentials are device-local and deliberately excluded from business backups. Preserve the local application-data directory separately for full device recovery. Passwords use salted PBKDF2-HMAC-SHA256 with 600,000 iterations; local storage is not encrypted or tamper-proof against someone controlling the Windows account or device. These controls do not replace server authorization for a future shared deployment.
 
@@ -55,3 +55,11 @@ The user confirmed successful native Windows sign-in and arrival at the ERP menu
 ## Windows 1.0.5 costing upgrade
 
 Review COSTING_GUIDE.md after upgrading. Old packaging draft values survive, but you must confirm their fill units before generating cost reports. Volume fills require measured density. Export a backup before upgrading; do not run an older executable against the new packaging draft version. Existing account and operational inventory data remain in place. All 61 tests pass; actual printer/device acceptance remains pending.
+
+## Windows 1.0.6 phased delivery (13 October 2026)
+
+The workspace now opens a responsive dashboard with per-currency sales, document balances, ledger cash, production approval/quality queues, reconciliation status and recent documents. Navigation is grouped into daily operations and reports/controls with Cairo, Arabic RTL and the existing module colors. Dashboard readiness/errors appear before financial figures are presented.
+
+Production estimates now include explicit per-batch labor and overhead. Reports separate raw-material cost, labor and overhead, then derive cost per good-output kilogram and packaging estimates. Production draft v2 migrates old v1 charges as zero; inventory schema remains v12. Product names reload into the editor. Both drafts use v2; preserve matching backups for rollback to earlier builds. Tax, automatic inventory valuation/COGS, shared synchronization and Android release identity/device acceptance remain pending.
+
+Phase 1 and phase 2 were committed separately and verified. All 71 regression tests pass and analysis is clean; additional English/Arabic dashboard renders were inspected using actual fonts. See DEVELOPMENT_PHASES.md and COSTING_GUIDE.md. Windows packaging now reads the project version and rejects a mismatch with the executable metadata.

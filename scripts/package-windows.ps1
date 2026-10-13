@@ -1,8 +1,13 @@
-param([string]$Version = '1.0.0')
+param([string]$Version = '')
 $ErrorActionPreference = 'Stop'
 $projectDirectory = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
 $releaseDirectory = [System.IO.Path]::GetFullPath((Join-Path $projectDirectory 'build/windows/x64/runner/Release'))
 $artifactDirectory = [System.IO.Path]::GetFullPath((Join-Path $projectDirectory 'artifacts'))
+if ([string]::IsNullOrWhiteSpace($Version)) {
+    $versionMatch = [regex]::Match([System.IO.File]::ReadAllText((Join-Path $projectDirectory 'pubspec.yaml')), '(?m)^version:\s*([0-9]+\.[0-9]+\.[0-9]+)')
+    if (!$versionMatch.Success) { throw 'Cannot determine the project release version.' }
+    $Version = $versionMatch.Groups[1].Value
+}
 if (!$releaseDirectory.StartsWith($projectDirectory + [System.IO.Path]::DirectorySeparatorChar) -or
     !$artifactDirectory.StartsWith($projectDirectory + [System.IO.Path]::DirectorySeparatorChar)) {
     throw 'Package paths must stay in the project.'
@@ -15,6 +20,10 @@ if (!(Test-Path -LiteralPath (Join-Path $releaseDirectory 'data')) -or
     throw 'Incomplete Windows release directory.'
 }
 if ($Version -notmatch '^[0-9]+\.[0-9]+\.[0-9]+$') { throw 'Use a semantic version.' }
+$binaryVersion = (Get-Item -LiteralPath (Join-Path $releaseDirectory 'detergent_factory.exe')).VersionInfo.ProductVersion
+if (!$binaryVersion -or $binaryVersion.Split('+')[0] -ne $Version) {
+    throw 'Executable version does not match the package version. Build the requested release first.'
+}
 [System.IO.Directory]::CreateDirectory($artifactDirectory) | Out-Null
 $archivePath = Join-Path $artifactDirectory "detergent-factory-erp-windows-$Version.zip"
 if (Test-Path -LiteralPath $archivePath) { throw 'Archive already exists; use a new version or filename.' }
@@ -26,6 +35,9 @@ if (Test-Path -LiteralPath (Join-Path $projectDirectory 'BUSINESS_CYCLE_TEST.md'
 }
 if (Test-Path -LiteralPath (Join-Path $projectDirectory 'COSTING_GUIDE.md')) {
     Copy-Item -LiteralPath (Join-Path $projectDirectory 'COSTING_GUIDE.md') -Destination $releaseDirectory
+}
+if (Test-Path -LiteralPath (Join-Path $projectDirectory 'DEVELOPMENT_PHASES.md')) {
+    Copy-Item -LiteralPath (Join-Path $projectDirectory 'DEVELOPMENT_PHASES.md') -Destination $releaseDirectory
 }
 [System.IO.Compression.ZipFile]::CreateFromDirectory($releaseDirectory, $archivePath)
 $archiveHash = (Get-FileHash -LiteralPath $archivePath -Algorithm SHA256).Hash

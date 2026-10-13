@@ -239,3 +239,9 @@ Finance now shows document-to-ledger reconciliation for receivables and payables
 ## Windows 1.0.5 costing accuracy (11 October 2026)
 
 Packaging estimates now use explicit g/kg/ml/L units and measured density for volume fills. Legacy draft values are preserved but require unit confirmation. Packaging draft v2 includes density, units and confirmation; inventory schema remains v12. Reports show fill mass and liquid/container/label breakdowns, require complete inputs and flag missing exchange rates. Label costs are available without a carton. SYP editing requires a configured rate. Narrow-screen layout and calculation overflow guards were improved. All 61 automated tests pass. COSTING_GUIDE.md explains the sample arithmetic and migration; valuation, COGS, waste, labor and overhead posting remain future work.
+
+## Dashboard and batch costing phases (13 October 2026)
+
+The new ERP workspace adds live per-currency overview cards, grouped module navigation, approval/quality queues, period closure and document reconciliation status, recent records and useful empty/loading/error states. English/Arabic phone and desktop layouts were checked with enlarged text and actual font renders. Phase 1 was committed as b1d41c5.
+
+Batch labor and overhead estimates contribute to production and packaging unit costs, with separate components in the screen/PDF. Old production drafts migrate charges as zero, and names remain visible when reopening the editor. Both drafts use v2; inventory schema remains v12. These estimates do not post payroll, expense journals, stock valuation or COGS. Phase 2 was committed as 24f7a80. All 71 regressions pass; analysis is clean. Refer to DEVELOPMENT_PHASES.md for phase evidence and remaining work.
