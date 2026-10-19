@@ -1,14 +1,14 @@
-# Chromebook test build 1.0.6
+# Chromebook test build 1.1.0
 
 This package installs the ERP as an Android application on ChromeOS. It includes ARM (32/64-bit) and x86_64 native libraries, optional touchscreen support and a resizable window. Numeric fields accept a physical keyboard even in a narrow window; the dialpad button opens the touch keypad. The existing Arabic/English Cairo template and offline ERP workflows are retained.
 
-The APK is debug-signed for testing, with application ID `com.example.detergent_factory`, version 1.0.6 and build 7. It has not been published to Google Play. APK compilation and automated checks succeeded; physical Chromebook installation, keyboards, printing and suspend/resume still need device acceptance.
+The APK is debug-signed for testing, with application ID `com.example.detergent_factory`, version 1.1.0 and build 8. It has not been published to Google Play. APK compilation and automated checks succeeded; physical Chromebook installation, keyboards, printing and suspend/resume still need device acceptance.
 
 ## Install the APK on your Chromebook
 
 Google Play Store availability confirms the Android route is relevant, but does not itself enable installation of this downloaded APK. Use the supported ADB testing route or an owner-managed Google Play testing release.
 
-1. Transfer `Detergent_ERP_ChromeOS_Test_1.0.6.apk` to the Chromebook.
+1. Transfer `Detergent_ERP_ChromeOS_Test_1.1.0.apk` to the Chromebook.
 2. In Settings, enable the Linux development environment if permitted. In its settings, open **Develop Android apps**, enable **ADB debugging**, and restart when prompted.
 3. Copy the APK into **Linux files** using the Files app. Open the Linux Terminal in that folder and run:
 
@@ -16,7 +16,7 @@ Google Play Store availability confirms the Android route is relevant, but does 
 sudo apt install adb
 adb connect arc
 # Accept the Chromebook's debugging authorization prompt.
-adb install -r ./Detergent_ERP_ChromeOS_Test_1.0.6.apk
+adb install -r ./Detergent_ERP_ChromeOS_Test_1.1.0.apk
 ```
 
 4. After installation reports `Success`, open **إدارة مصنع المنظفات** from the launcher. Create your own local ERP owner account with a password of at least 12 characters. Choose the language and enter the dashboard.
@@ -29,13 +29,15 @@ An update through `adb install -r` retains app data when application ID and sign
 
 A Play testing release is a separate distribution step. It needs the owner's Play Console account, permanent application ID and private release signing configuration. This repository rejects release builds without those settings; this debug APK cannot serve as that release. No Play Console upload has been performed. See [Flutter's Android release instructions](https://docs.flutter.dev/deployment/android) and [Google Play internal testing instructions](https://support.google.com/googleplay/android-developer/answer/9845334).
 
+See [the warehouse upgrade guide](WAREHOUSE_UPGRADE_GUIDE_AR.md) before upgrading business data to schema 13.
+
 ## Transfer existing business data
 
 Windows and Chromebook installations have independent accounts and business databases. To transfer a snapshot, export a business backup from Windows, enroll an owner on the Chromebook, then use the ERP backup screen to paste and validate the backup text before confirming restore. Back up the destination first: restore replaces its business dataset. Business backups exclude local account credentials. There is no live synchronization or merge between devices.
 
 ## Test the current version
 
-Open `ERP_Test_Pack_1.0.6.html` locally in Chrome on either device. This HTML is the test checklist; the ERP runs in the installed application. It works offline and contains all 101 manual cases plus the names, source paths and captured outcomes of all 72 automated tests.
+Open `ERP_Test_Pack_1.1.0.html` locally in Chrome on either device. This HTML is the test checklist; the ERP runs in the installed application. It works offline and contains all 119 manual cases plus the names, source paths and captured outcomes of all 128 captured automated tests.
 
 Enter your tester name, device model and installed build, select **ChromeOS Android** or **Windows**, then follow each case's steps and expected result. Mark Pass, Fail, Blocked or Not applicable and record useful notes. Results begin as Pending. The automated section is a developer-run snapshot, separate from your manual results.
 

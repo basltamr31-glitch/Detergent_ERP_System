@@ -54,7 +54,7 @@ if ((Test-Path -LiteralPath $packageDirectory) -or (Test-Path -LiteralPath $arch
 [System.IO.Directory]::CreateDirectory($packageDirectory) | Out-Null
 Copy-Item -LiteralPath $apkPath -Destination (Join-Path $packageDirectory "Detergent_ERP_ChromeOS_Test_$version.apk")
 Copy-Item -LiteralPath $checklistPath -Destination $packageDirectory
-foreach ($guide in @('CHROMEBOOK_GUIDE.md','BUSINESS_CYCLE_TEST.md','COSTING_GUIDE.md','RELEASE_GUIDE.md')) {
+foreach ($guide in @('CHROMEBOOK_GUIDE.md','BUSINESS_CYCLE_TEST.md','COSTING_GUIDE.md','RELEASE_GUIDE.md','WAREHOUSE_UPGRADE_GUIDE_AR.md')) {
     Copy-Item -LiteralPath (Join-Path $projectDirectory $guide) -Destination $packageDirectory
 }
 $checksums = @(Get-ChildItem -LiteralPath $packageDirectory -File | Sort-Object Name | ForEach-Object {

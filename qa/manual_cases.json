@@ -1,5 +1,5 @@
 {
-  "version": "1.0.6+7",
+  "version": "1.1.0+8",
   "preparation": [
     "Use sample data in an empty trial profile for exact balances. Do not reset or overwrite real business data.",
     "Export a business backup before testing. Keep it off the device.",
@@ -7,7 +7,8 @@
     "Use English labels for the walkthrough, then repeat the language/layout checks in Arabic.",
     "Run the exact base cycle in this order: TC-070, TC-034, TC-039, TC-040, TC-048, TC-050, TC-058, TC-060, TC-061, TC-071. Check the USD 90 cash and stock totals before running the refund/return chain TC-065, TC-066 and TC-068.",
     "Use separate trial items/documents for other mutation and rejection tests so they do not alter the base cycle. Category/ID order is a catalog, not an instruction to run every case against the same records.",
-    "The Chromebook APK is debug-signed for development testing. Play Store publication needs an owner-approved application ID, release signing and Play Console access."
+    "The Chromebook APK is debug-signed for development testing. Play Store publication needs an owner-approved application ID, release signing and Play Console access.",
+    "For warehouse1.1 examples use a separate empty SKU/dataset. Manufacturing must precede trading in the mixed-source FIFO example. See WAREHOUSE_UPGRADE_GUIDE_AR.md."
   ],
   "cases": [
     {
@@ -84,7 +85,7 @@
         "Inspect the APK name/version and installation source",
         "Treat it as a debug-signed test build"
       ],
-      "expected": "Version is 1.0.6, build 7. It is not presented as a production Play Store release.",
+      "expected": "Version is 1.1.0, build 8. It is not presented as a production Play Store release.",
       "platform": "ChromeOS"
     },
     {
@@ -1092,6 +1093,186 @@
         "Inspect original records after corrections, counts, refunds, returns and master edits"
       ],
       "expected": "Original numbered business content and audit links are retained; there is no destructive history reset.",
+      "platform": "Both"
+    },
+    {
+      "id": "TC-102",
+      "category": "Warehouses 1.1 acceptance",
+      "title": "Legacy stock migration",
+      "steps": [
+        "Upgrade a COPY of old business data. Compare raw/finished balances, original document IDs, payments and journals. Restart twice."
+      ],
+      "expected": "Balances and history are preserved; migration does not receive all old production again. Unknown source/cost remains explicitly unknown.",
+      "platform": "Both"
+    },
+    {
+      "id": "TC-103",
+      "category": "Warehouses 1.1 acceptance",
+      "title": "Register one finished SKU",
+      "steps": [
+        "Register Cleaner 1L with SKU CL-1L, base unit Package, and no opening quantity."
+      ],
+      "expected": "One product with zero stock exists; no supplier purchase or manufacturing document is invented.",
+      "platform": "Both"
+    },
+    {
+      "id": "TC-104",
+      "category": "Warehouses 1.1 acceptance",
+      "title": "Product-specific carton definitions",
+      "steps": [
+        "For CL-1L define Carton = 12 Package. For a different SKU define Carton = 24 Package."
+      ],
+      "expected": "Each product retains its own positive conversion and revision; factors do not leak across SKUs.",
+      "platform": "Both"
+    },
+    {
+      "id": "TC-105",
+      "category": "Warehouses 1.1 acceptance",
+      "title": "Raw mass conversion",
+      "steps": [
+        "For raw Powder with base Kilogram, receive 500 Gram at USD 0.01 per gram."
+      ],
+      "expected": "Raw stock increases 0.5 kg. Supplier invoice remains 500 grams, total USD 5.00, with a frozen conversion.",
+      "platform": "Both"
+    },
+    {
+      "id": "TC-106",
+      "category": "Warehouses 1.1 acceptance",
+      "title": "Direct trading receipt",
+      "steps": [
+        "Buy 3 Carton of CL-1L at USD 36 per carton through Trading purchase."
+      ],
+      "expected": "Finished stock increases 36 Package, receipt total USD 108; raw stock and production orders do not change.",
+      "platform": "Both"
+    },
+    {
+      "id": "TC-107",
+      "category": "Warehouses 1.1 acceptance",
+      "title": "Manufacturing automatic receipt",
+      "steps": [
+        "Plan 24 Package, approve, then Complete & receive finished goods. Select the same CL-1L SKU, actual ingredient usage and 24 output, check QC and enter total confirmed cost USD 48 with a reviewed reference."
+      ],
+      "expected": "Actual raw consumption, batch and 24 ready packages commit together once, with manufacturing lot and cost snapshot. Mere planning approval does not receive sale stock.",
+      "platform": "Both"
+    },
+    {
+      "id": "TC-108",
+      "category": "Warehouses 1.1 acceptance",
+      "title": "Mixed-source sale",
+      "steps": [
+        "On an empty trial SKU run manufacturing receipt BEFORE the trading receipt above. Sell 30 Package at USD 4."
+      ],
+      "expected": "One SKU starts at 60. Sale allocates 24 manufactured and 6 supplier packages, allocated cost USD 66; remaining finished stock is 30 supplier packages.",
+      "platform": "Both"
+    },
+    {
+      "id": "TC-109",
+      "category": "Warehouses 1.1 acceptance",
+      "title": "Carton sale",
+      "steps": [
+        "On separate trial stock buy 24 Package with Carton = 12. Sell 1 Carton at the explicit carton selling price."
+      ],
+      "expected": "Invoice records 1 Carton, stock decreases 12 Package, and lot allocations cover all 12 base units.",
+      "platform": "Both"
+    },
+    {
+      "id": "TC-110",
+      "category": "Warehouses 1.1 acceptance",
+      "title": "Changed carton after receipt",
+      "steps": [
+        "Receive stock with factor12, revise carton factor to24, then view old receipt and post a new transaction."
+      ],
+      "expected": "Historical invoice and stock quantity remain unchanged. New transactions freeze revision2 and factor24.",
+      "platform": "Both"
+    },
+    {
+      "id": "TC-111",
+      "category": "Warehouses 1.1 acceptance",
+      "title": "Actual production variance",
+      "steps": [
+        "Complete an approved trial order using a different positive actual output or actual ingredient quantity; first omit, then enter the variance reason."
+      ],
+      "expected": "Missing reason is rejected. Valid completion preserves the original planned recipe alongside actual values and rejects shortages atomically.",
+      "platform": "Both"
+    },
+    {
+      "id": "TC-112",
+      "category": "Warehouses 1.1 acceptance",
+      "title": "QC and output unit control",
+      "steps": [
+        "Attempt completion without QC or with an unrelated finished SKU unit."
+      ],
+      "expected": "No ready stock or partial consumption is posted. Bulk-to-package conversion is not guessed.",
+      "platform": "Both"
+    },
+    {
+      "id": "TC-113",
+      "category": "Warehouses 1.1 acceptance",
+      "title": "Bulk packaging receipt",
+      "steps": [
+        "Use the bulk release/later transfer route. Select an existing finished SKU, enter measured source/output quantities and units, and optionally enter a separate reviewed total lot cost/currency."
+      ],
+      "expected": "The selected SKU receives one manufacturing lot, source quantity is conserved, and cost stays separate from the selling reference price.",
+      "platform": "Both"
+    },
+    {
+      "id": "TC-114",
+      "category": "Warehouses 1.1 acceptance",
+      "title": "Supplier lot return restriction",
+      "steps": [
+        "Sell some units from supplier receipt A, replenish from receipt B, then attempt to return all of A."
+      ],
+      "expected": "Return is rejected until A original lot is genuinely available; unrelated replenishment cannot replace it.",
+      "platform": "Both"
+    },
+    {
+      "id": "TC-115",
+      "category": "Warehouses 1.1 acceptance",
+      "title": "Return exact source costs",
+      "steps": [
+        "Post two sales from one trial costed lot, then return the earlier sale."
+      ],
+      "expected": "Original sale allocations and minor-unit costs are reversed exactly. Exhausting the lot later leaves zero quantity and no residual allocated cost.",
+      "platform": "Both"
+    },
+    {
+      "id": "TC-116",
+      "category": "Warehouses 1.1 acceptance",
+      "title": "Warehouse document filters",
+      "steps": [
+        "Open Purchases and filter Raw materials / Trading goods. Open Sales and filter Manufacturing / Supplier purchases / Opening or Adjustment."
+      ],
+      "expected": "Only matching documents are shown; stock quantity conversion and per-lot allocated cost/source remain visible.",
+      "platform": "Both"
+    },
+    {
+      "id": "TC-117",
+      "category": "Warehouses 1.1 acceptance",
+      "title": "Unknown cost and currencies",
+      "steps": [
+        "Inspect old opening stock, a USD supplier lot and a separate SYP supplier lot."
+      ],
+      "expected": "Unknown is not displayed as zero cost; original lot costs retain their currencies and are not summed into a false combined valuation.",
+      "platform": "Both"
+    },
+    {
+      "id": "TC-118",
+      "category": "Warehouses 1.1 acceptance",
+      "title": "Upgrade and paired-write recovery",
+      "steps": [
+        "On disposable trial copies interrupt migration or a coordinated trading/production posting and restart. Preserve backups and files."
+      ],
+      "expected": "Pending recovery finishes both snapshots once before posting resumes. Inconsistent candidates fail before overwriting original data.",
+      "platform": "Both"
+    },
+    {
+      "id": "TC-119",
+      "category": "Warehouses 1.1 acceptance",
+      "title": "Packaging input stability",
+      "steps": [
+        "In the bulk transfer dialog enter the actual source quantity before selecting an existing finished SKU. Select that SKU, delete/retype quantity digits, then cancel. Repeat in Arabic and English."
+      ],
+      "expected": "The visible quantity remains the entered quantity during layout changes; deleted digits do not return. Cancellation changes no raw or finished stock.",
       "platform": "Both"
     }
   ]

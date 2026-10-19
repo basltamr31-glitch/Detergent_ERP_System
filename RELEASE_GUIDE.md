@@ -72,3 +72,12 @@ A debug-signed installed Android build is available for Chromebook devices with 
 See [CHROMEBOOK_GUIDE.md](CHROMEBOOK_GUIDE.md) for approved ADB installation and the separate Google Play testing-release route. Google Play Store availability does not itself install our downloaded APK. The test build retains the development application ID; it is not a published or production-signed release. No physical Chromebook has been connected for acceptance.
 
 All 72 automated tests pass and static analysis is clean. The offline HTML acceptance pack contains 101 manual scenarios, the complete captured automated inventory, filters, notes and JSON/CSV results export/import. Generate it with scripts/generate-test-pack.py from completed Flutter machine output and the analyzer log; package the APK, guides and checklist with scripts/package-chromebook.ps1. The package records checksums and actual automated verification metadata. Binary and generated HTML artifacts remain local/ignored; source catalogs and scripts are committed.
+
+
+## Warehouse release 1.1.0+8 (19 October 2026)
+
+Read WAREHOUSE_UPGRADE_GUIDE_AR.md before opening existing business data. Schema 13 adds SKU/unit definitions, generic source/cost lots, movements and fully allocated sales. The shared migration preserves before-images and validates reconciled candidate states before either is written, then uses a durable recovery journal. Unknown old sources/costs remain unknown. Existing accounts, business document identifiers, payments, period locks and costing draftv2 remain.
+
+The UI separates raw and trading procurement while retaining a single finished SKU for manufacturing/supplier stock. Approved sale-ready production records actual inputs/output and receives finished stock in one coordinated posting. Bulk production still uses an explicit later-packaging transfer, now with existing SKU selection and an optional reviewed totalcost snapshot. Quantities/units/factors are frozen per document. Returns require original lot availability and preserve exact source costs.
+
+All 128 named automated tests pass and static analysis has no issues. The acceptance pack includes 119 manual cases and the complete captured regression inventory. Automatic raw-material consumption valuation, perpetual inventory/COGS journals, separate WIP/quality-hold execution, partial returns, tax setup and live device synchronization remain outside this release. Batch costs are entered/reviewed explicitly; reference selling prices and estimating drafts are not historical actual costs.

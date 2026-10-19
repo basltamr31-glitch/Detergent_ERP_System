@@ -31,20 +31,25 @@ Android debug APK 1.0.6+7 built successfully. All 72 regressions pass, including
 Source-controlled catalogs and generation/packaging scripts reproduce the delivery. Packages include installation/workflow guides and SHA-256 manifests and refuse to overwrite existing archives. Physical Chromebook installation, suspend/resume, keyboard behavior and printing remain pending device acceptance. Approved ADB sideloading is the current installation route; Play distribution still needs the owner's account, permanent application ID and private release signing identity. See CHROMEBOOK_GUIDE.md.
 
 
-## Warehouse phase 1 — schema13, units and source-tracked inventory (19 October 2026)
+## Warehouse phase 1 — schema 13, units and source-tracked inventory (19 October 2026)
 
 Implements additive SKU/unit definitions, immutable conversion snapshots, generalized finished-stock lots and movements, full allocation of new sales/counts and exact per-source cost reversals. Supplier receipts can enter finished stock through a coordinated domain service; raw receipt quantities can convert to their base unit while retaining invoice amounts. Source costs are distinct from selling reference prices. Unknown legacy costs remain unknown.
 
-A deterministic cutover validates both candidate states, preserves before-images, uses a durable joint migration journal and rejects quantity conflicts before writing. Tests cover older-state imports, interrupted upgrade/paired-write recovery, unit precision, lot/source validation, frozen conversions, supplier refund/return constraints and minor-unit rounding. The integrated workspace regression run passes all126 named tests; UI and automatic completion are delivered in the following source phase. No live customer data was opened or migrated during development.
+A deterministic cutover validates both candidate states, preserves before-images, uses a durable joint migration journal and rejects quantity conflicts before writing. Tests cover older-state imports, interrupted upgrade/paired-write recovery, unit precision, lot/source validation, frozen conversions, supplier refund/return constraints and minor-unit rounding. The integrated workspace regression run passes all 126 named tests; UI and automatic completion are delivered in the following source phase. No live customer data was opened or migrated during development.
 
 
 ## Warehouse phase 2 — trading/production workflows and bilingual warehouse UI
 
 Adds zero-stock SKU registration, product/material unit-definition editors, direct trading receipts, source/cost/movement details, invoice-to-base quantity previews and ID-based sales. Approved sale-ready production can now record actual consumption/yield and QC then atomically receive the selected finished SKU. Planned recipe values remain unchanged; variances require reasons. Bulk output retains the explicit later-packaging route with existing-SKU selection and an optional reviewed total-cost snapshot.
 
-Purchase history distinguishes raw/trading destinations; sales show per-lot source/cost and source filters. The existing Cairo/Arabic/English colors and native platform behavior remain. Four trading and four completion UI cases cover320/1280 widths in both languages; domain tests verify the60-package mixed-source example, frozen conversions, original-lot returns and exact minor-unit cost restoration. All126 named regressions pass; static analysis is clean. Actual batch costs are explicitly recorded/reviewed, not silently inferred from costing drafts; perpetual valuation/COGS and separate WIP/quality-hold execution remain outside this delivery.
+Purchase history distinguishes raw/trading destinations; sales show per-lot source/cost and source filters. The existing Cairo/Arabic/English colors and native platform behavior remain. Four trading and four completion UI cases cover320/1280 widths in both languages; domain tests verify the60-package mixed-source example, frozen conversions, original-lot returns and exact minor-unit cost restoration. All 126 named regressions pass; static analysis is clean. Actual batch costs are explicitly recorded/reviewed, not silently inferred from costing drafts; perpetual valuation/COGS and separate WIP/quality-hold execution remain outside this delivery.
 
 
 ## Warehouse phase 3 — stable packaging editors
 
-Keyed transfer inputs retain their editing state when switching between a new product and a registered SKU. Two English/Arabic regressions enter a source quantity before selecting the SKU and verify deletion/retyping and cancellation preserve the form and original stock. Fixture I/O runs outside widget fake time. The final integrated run passes128 named tests with no analyzer issues; Windows x64 release and universal Android debug APK compile successfully.
+Keyed transfer inputs retain their editing state when switching between a new product and a registered SKU. Two English/Arabic regressions enter a source quantity before selecting the SKU and verify deletion/retyping and cancellation preserve the form and original stock. Fixture I/O runs outside widget fake time. The final integrated run passes 128 named tests with no analyzer issues; Windows x64 release and universal Android debug APK compile successfully.
+
+
+## Warehouse phase 4 — release1.1.0 and acceptance delivery
+
+Windows x64 and the ARM32/ARM64/x86_64 Android test build were rebuilt after the editor fix. The offline acceptance pack contains119 manual cases and the full128-test captured inventory; its notes/persistence, filters, JSON/CSV export, valid/invalid imports and narrow layout were checked in isolated Chrome. The operating guide explains backups, schema13 migration, the combined manufacturing/trading example, explicit cost snapshots and remaining device/business-policy checks. Binary packages and SHA-256 manifests are generated locally; source and verification catalogs are tracked in Git.

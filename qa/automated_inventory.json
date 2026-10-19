@@ -1,9 +1,9 @@
 {
-  "version": "1.0.6+7",
+  "version": "1.1.0+8",
   "verification": {
-    "capturedAt": "2026-10-13T10:36:08.796188+00:00",
+    "capturedAt": "2026-10-19T14:04:01.073950+00:00",
     "testRunSuccess": true,
-    "resultsSha256": "f0214d95a52c88330867259b4dfe91b64b99ac33110e10fcda2f48cb1990e63e",
+    "resultsSha256": "615e45d3edc749c02ccb2b150b80a5cb2c3be588c8c7c73c1e8bc46ed00da8f6",
     "analysisSha256": "eb96b591f2cb274fa10137072ab9f442735bc4a26e2bfef49f5029e11002b631",
     "analysisStatus": "No issues found"
   },
@@ -123,6 +123,12 @@
       "skipped": false
     },
     {
+      "name": "Backup restore cancellation at 320.0 in ar",
+      "file": "test/backup_ui_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
       "name": "Excess payments, invalid currency and quantity cannot create sales",
       "file": "test/business_documents_test.dart",
       "result": "success",
@@ -153,7 +159,7 @@
       "skipped": false
     },
     {
-      "name": "Backup restore cancellation at 320.0 in ar",
+      "name": "Backup restore cancellation at 1280.0 in en",
       "file": "test/backup_ui_test.dart",
       "result": "success",
       "skipped": false
@@ -161,12 +167,6 @@
     {
       "name": "Android/ChromeOS keyboard works in a narrow window and optional keypad preserves Arabic decimals",
       "file": "test/chromebook_keyboard_test.dart",
-      "result": "success",
-      "skipped": false
-    },
-    {
-      "name": "Backup restore cancellation at 1280.0 in en",
-      "file": "test/backup_ui_test.dart",
       "result": "success",
       "skipped": false
     },
@@ -183,14 +183,14 @@
       "skipped": false
     },
     {
-      "name": "Explicit fill units, density and costing readiness at 320.0 in en",
-      "file": "test/costing_ui_test.dart",
+      "name": "Batch charges and restored product name at 320.0 in ar",
+      "file": "test/batch_costs_ui_test.dart",
       "result": "success",
       "skipped": false
     },
     {
-      "name": "Batch charges and restored product name at 320.0 in ar",
-      "file": "test/batch_costs_ui_test.dart",
+      "name": "Explicit fill units, density and costing readiness at 320.0 in en",
+      "file": "test/costing_ui_test.dart",
       "result": "success",
       "skipped": false
     },
@@ -213,14 +213,14 @@
       "skipped": false
     },
     {
-      "name": "Explicit fill units, density and costing readiness at 1280.0 in en",
-      "file": "test/costing_ui_test.dart",
+      "name": "Receipt form and populated documents at 320.0 in en",
+      "file": "test/document_ui_test.dart",
       "result": "success",
       "skipped": false
     },
     {
-      "name": "Receipt form and populated documents at 320.0 in en",
-      "file": "test/document_ui_test.dart",
+      "name": "Explicit fill units, density and costing readiness at 1280.0 in en",
+      "file": "test/costing_ui_test.dart",
       "result": "success",
       "skipped": false
     },
@@ -249,8 +249,20 @@
       "skipped": false
     },
     {
+      "name": "Authentication edits survive deletion, composition and rebuilds in ar",
+      "file": "test/auth_editor_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
       "name": "Multi-item sale, actual refunds, return and journals reconcile",
       "file": "test/erp_operations_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Dashboard balances and module navigation at 320.0 in ar",
+      "file": "test/dashboard_test.dart",
       "result": "success",
       "skipped": false
     },
@@ -285,26 +297,20 @@
       "skipped": false
     },
     {
-      "name": "Dashboard balances and module navigation at 320.0 in ar",
-      "file": "test/dashboard_test.dart",
-      "result": "success",
-      "skipped": false
-    },
-    {
       "name": "Approved recipe orders release once, transfer and trace sale lots with expiry protection",
       "file": "test/erp_operations_test.dart",
       "result": "success",
       "skipped": false
     },
     {
-      "name": "Production approval, transfer, finance and sign-in at 320.0 in en",
-      "file": "test/erp_ui_test.dart",
+      "name": "Dashboard balances and module navigation at 1280.0 in ar",
+      "file": "test/dashboard_test.dart",
       "result": "success",
       "skipped": false
     },
     {
-      "name": "Dashboard balances and module navigation at 1280.0 in ar",
-      "file": "test/dashboard_test.dart",
+      "name": "Production approval, transfer, finance and sign-in at 320.0 in en",
+      "file": "test/erp_ui_test.dart",
       "result": "success",
       "skipped": false
     },
@@ -321,6 +327,66 @@
       "skipped": false
     },
     {
+      "name": "Cutover retains received quantities and baselines the current balances",
+      "file": "test/inventory_migration_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Untraced residual becomes unknown opening stock without invented cost",
+      "file": "test/inventory_migration_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Returned transfers and reversed sales keep immutable historical links",
+      "file": "test/inventory_migration_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Consumed lots remain identifiable with zero remaining baseline",
+      "file": "test/inventory_migration_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Small legacy openings are preserved rather than discarded as tolerance",
+      "file": "test/inventory_migration_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Overallocations and lots exceeding balance require reconciliation",
+      "file": "test/inventory_migration_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Upgrade is deterministic, idempotent and returns independent snapshots",
+      "file": "test/inventory_migration_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Old snapshots and ID-less schema 1 get stable additive master identity",
+      "file": "test/inventory_migration_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Raw upgrade preserves quantities and history without inventing raw lots",
+      "file": "test/inventory_migration_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Older loader-compatible shapes upgrade into fully valid paired states",
+      "file": "test/inventory_migration_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
       "name": "Legacy warehouse migrates once and committed batch survives restart",
       "file": "test/inventory_test.dart",
       "result": "success",
@@ -329,6 +395,12 @@
     {
       "name": "Invalid and insufficient consumption leave inventory and history unchanged",
       "file": "test/inventory_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Receipt form and populated documents at 1280.0 in en",
+      "file": "test/document_ui_test.dart",
       "result": "success",
       "skipped": false
     },
@@ -345,14 +417,80 @@
       "skipped": false
     },
     {
-      "name": "Authentication edits survive deletion, composition and rebuilds in ar",
-      "file": "test/auth_editor_test.dart",
+      "name": "Unsupported schema reports startup error and retry recovers",
+      "file": "test/inventory_test.dart",
       "result": "success",
       "skipped": false
     },
     {
-      "name": "Unsupported schema reports startup error and retry recovers",
-      "file": "test/inventory_test.dart",
+      "name": "Carton factors belong to each SKU and snapshots retain their revision",
+      "file": "test/inventory_units_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Standard mass and volume convert within their own dimensions",
+      "file": "test/inventory_units_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Undefined packaging and mass-volume relationships are never inferred",
+      "file": "test/inventory_units_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Fractions require permission and converted precision must be exact",
+      "file": "test/inventory_units_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Malformed definitions, duplicate units and standard overrides fail",
+      "file": "test/inventory_units_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Surrounding whitespace cannot bypass conversion uniqueness or lookup",
+      "file": "test/inventory_units_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Invalid quantities and overflowing converted balances fail",
+      "file": "test/inventory_units_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Valid paired upgrade preserves exact before-images and both balances",
+      "file": "test/inventory_upgrade_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Repeated and concurrent prepare calls do not duplicate upgrade or lots",
+      "file": "test/inventory_upgrade_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Unreconciled legacy lot stops before either original store is changed",
+      "file": "test/inventory_upgrade_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Pending upgrade replays both results after one store was written",
+      "file": "test/inventory_upgrade_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Unsupported input schema leaves both original strings untouched",
+      "file": "test/inventory_upgrade_test.dart",
       "result": "success",
       "skipped": false
     },
@@ -363,20 +501,14 @@
       "skipped": false
     },
     {
-      "name": "Receipt form and populated documents at 1280.0 in en",
+      "name": "Receipt form and populated documents at 320.0 in ar",
       "file": "test/document_ui_test.dart",
       "result": "success",
       "skipped": false
     },
     {
-      "name": "Windows sharing and lock violations get actionable startup guidance",
-      "file": "test/startup_error_test.dart",
-      "result": "success",
-      "skipped": false
-    },
-    {
-      "name": "Production navigation at 390.0 in en",
-      "file": "test/widget_test.dart",
+      "name": "Actual completion and finished receipt persist atomically and retry once",
+      "file": "test/production_completion_test.dart",
       "result": "success",
       "skipped": false
     },
@@ -387,26 +519,32 @@
       "skipped": false
     },
     {
-      "name": "Receipt form and populated documents at 320.0 in ar",
-      "file": "test/document_ui_test.dart",
+      "name": "Validation never consumes raw stock or creates partial finished stock",
+      "file": "test/production_completion_test.dart",
       "result": "success",
       "skipped": false
     },
     {
-      "name": "Production navigation at 390.0 in ar",
-      "file": "test/widget_test.dart",
+      "name": "Unknown cost stays unknown and completion creates an explicit new SKU",
+      "file": "test/production_completion_test.dart",
       "result": "success",
       "skipped": false
     },
     {
-      "name": "Production navigation at 1280.0 in en",
-      "file": "test/widget_test.dart",
+      "name": "Changed retry and legacy released orders cannot add a second receipt",
+      "file": "test/production_completion_test.dart",
       "result": "success",
       "skipped": false
     },
     {
-      "name": "Production navigation at 1280.0 in ar",
-      "file": "test/widget_test.dart",
+      "name": "Permissions, accounting lock and lot expiry apply to combined completion",
+      "file": "test/production_completion_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Interrupted combined payload restores raw consumption and finished lot",
+      "file": "test/production_completion_test.dart",
       "result": "success",
       "skipped": false
     },
@@ -417,8 +555,86 @@
       "skipped": false
     },
     {
+      "name": "Actual production completion at 320.0 in en",
+      "file": "test/production_completion_ui_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Windows sharing and lock violations get actionable startup guidance",
+      "file": "test/startup_error_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
       "name": "Production approval, transfer, finance and sign-in at 320.0 in ar",
       "file": "test/erp_ui_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Legacy baselines validate without invented raw lots or cost",
+      "file": "test/stock_schema_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Receipt, complete sale allocations and count shortages conserve stock",
+      "file": "test/stock_schema_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Partial allocation and missing document postings are rejected",
+      "file": "test/stock_schema_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Legacy partial sale return restores known lots and an unknown remainder",
+      "file": "test/stock_schema_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Frozen conversion arithmetic survives later master changes",
+      "file": "test/stock_schema_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Duplicate SKUs, unknown-cost amounts and balance drift are rejected",
+      "file": "test/stock_schema_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Movement overruns, duplicate postings and orphan sales are rejected",
+      "file": "test/stock_schema_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Held or expired lots cannot supply active tracked sales",
+      "file": "test/stock_schema_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Supplier purchase and full return match invoice quantities and cost",
+      "file": "test/stock_schema_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Manufacturing completion links actual consumption, output and cost",
+      "file": "test/stock_schema_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Same SKU combines production and carton purchasing with exact source costs",
+      "file": "test/trading_inventory_test.dart",
       "result": "success",
       "skipped": false
     },
@@ -429,14 +645,134 @@
       "skipped": false
     },
     {
+      "name": "Original supplier lot required for return; replenishment cannot substitute",
+      "file": "test/trading_inventory_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Purchase and sale preserve invoice and stock units after master revision",
+      "file": "test/trading_inventory_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Trading receipt converts cartons and shows source cost at 320.0 in en",
+      "file": "test/trading_ui_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Wrong units, changed retries and overpayments leave both stores intact",
+      "file": "test/trading_inventory_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Trading supplier refunds and returns reconcile the existing journals",
+      "file": "test/trading_inventory_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Mass unit receipt keeps supplier invoice total and raw base quantity",
+      "file": "test/trading_inventory_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Intervening sales and return preserve exact minor-unit layer costs",
+      "file": "test/trading_inventory_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
       "name": "Sales entry posts a priced document in ar",
       "file": "test/document_ui_test.dart",
       "result": "success",
       "skipped": false
     },
     {
+      "name": "Bulk packaging selects existing SKU and freezes a reviewed total cost",
+      "file": "test/trading_inventory_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
       "name": "Production approval, transfer, finance and sign-in at 1280.0 in ar",
       "file": "test/erp_ui_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Packaging editor retains typed quantities when selecting SKU in en",
+      "file": "test/transfer_editor_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Actual production completion at 1280.0 in en",
+      "file": "test/production_completion_ui_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Production navigation at 390.0 in en",
+      "file": "test/widget_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Actual production completion at 320.0 in ar",
+      "file": "test/production_completion_ui_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Production navigation at 390.0 in ar",
+      "file": "test/widget_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Packaging editor retains typed quantities when selecting SKU in ar",
+      "file": "test/transfer_editor_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Production navigation at 1280.0 in en",
+      "file": "test/widget_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Trading receipt converts cartons and shows source cost at 1280.0 in en",
+      "file": "test/trading_ui_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Actual production completion at 1280.0 in ar",
+      "file": "test/production_completion_ui_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Production navigation at 1280.0 in ar",
+      "file": "test/widget_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Trading receipt converts cartons and shows source cost at 320.0 in ar",
+      "file": "test/trading_ui_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Trading receipt converts cartons and shows source cost at 1280.0 in ar",
+      "file": "test/trading_ui_test.dart",
       "result": "success",
       "skipped": false
     }

@@ -39,6 +39,9 @@ if (Test-Path -LiteralPath (Join-Path $projectDirectory 'COSTING_GUIDE.md')) {
 if (Test-Path -LiteralPath (Join-Path $projectDirectory 'DEVELOPMENT_PHASES.md')) {
     Copy-Item -LiteralPath (Join-Path $projectDirectory 'DEVELOPMENT_PHASES.md') -Destination $releaseDirectory
 }
+Copy-Item -LiteralPath (Join-Path $projectDirectory 'WAREHOUSE_UPGRADE_GUIDE_AR.md') -Destination $releaseDirectory
+$checklistPath = Join-Path $artifactDirectory "ERP_Test_Pack_$Version.html"
+if (Test-Path -LiteralPath $checklistPath) { Copy-Item -LiteralPath $checklistPath -Destination $releaseDirectory }
 [System.IO.Compression.ZipFile]::CreateFromDirectory($releaseDirectory, $archivePath)
 $archiveHash = (Get-FileHash -LiteralPath $archivePath -Algorithm SHA256).Hash
 @{file = [System.IO.Path]::GetFileName($archivePath); sha256 = $archiveHash;
