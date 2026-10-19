@@ -1,3 +1,6 @@
+import '../services/inventory_units.dart';
+import '../services/inventory_migration.dart';
+import '../services/inventory_upgrade.dart';
 import '../models/stock_count.dart';
 import '../services/access_control.dart';
 import '../models/journal_entry.dart';
@@ -20,6 +23,7 @@ import '../models/material_transaction.dart';
 import '../models/manufactured_product.dart';
 
 class WarehouseProvider with ChangeNotifier {
+  Map<String, dynamic>? _migration;
   final List<my_models.Material> _materials = [];
   final List<MaterialTransaction> _transactions = [];
   final List<ManufacturedProduct> _manufacturedProducts = [];
@@ -418,6 +422,8 @@ class WarehouseProvider with ChangeNotifier {
           quantity: m.quantity,
           unit: m.unit,
           priceCurrency: m.priceCurrency,
+          sku: m.sku.isEmpty ? 'RAW-${m.id}' : m.sku,
+          unitConversions: m.unitConversions,
           unitPrice: m.unitPrice)));
   List<MaterialTransaction> get transactions =>
       List.unmodifiable(_transactions.map((t) => MaterialTransaction(
@@ -454,7 +460,8 @@ class WarehouseProvider with ChangeNotifier {
   }
 
   String _snapshot() => jsonEncode({
-        'version': 12,
+        'version': 13,
+        if (_migration != null) 'migration': _migration,
         'recipes': _recipes,
         'orders': _orders,
         'counts': _counts.map((c) => c.toJson()).toList(),
@@ -474,7 +481,9 @@ class WarehouseProvider with ChangeNotifier {
                   'quantity': m.quantity,
                   'unit': m.unit,
                   'price': m.unitPrice,
-                  'priceCurrency': m.priceCurrency
+                  'priceCurrency': m.priceCurrency,
+                  'sku': m.sku.isEmpty ? 'RAW-${m.id}' : m.sku,
+                  'unitConversions': m.unitConversions
                 })
             .toList(),
         'transactions': _transactions
@@ -507,9 +516,14 @@ class WarehouseProvider with ChangeNotifier {
             .toList()
       });
   void _restore(String value) {
-    final data = jsonDecode(value) as Map<String, dynamic>;
+    final data =
+        InventoryMigration.warehouse(jsonDecode(value) as Map<String, dynamic>);
     StateSchema.inventory('warehouse', data);
-    if (![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].contains(data['version'])) {
+    _migration = data['migration'] == null
+        ? null
+        : Map<String, dynamic>.from(data['migration']);
+    if (![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
+        .contains(data['version'])) {
       throw StateError('Unsupported inventory version.');
     }
     _recipes
@@ -551,6 +565,10 @@ class WarehouseProvider with ChangeNotifier {
       ..clear()
       ..addAll((data['materials'] as List).map((m) => my_models.Material(
           id: m['id'] as String?,
+          sku: m['sku'],
+          unitConversions: (m['unitConversions'] as List)
+              .map((c) => Map<String, dynamic>.from(c))
+              .toList(),
           name: m['name'],
           quantity: (m['quantity'] as num).toDouble(),
           unit: m['unit'],
@@ -600,6 +618,7 @@ class WarehouseProvider with ChangeNotifier {
     loadError = null;
     notifyListeners();
     try {
+      await InventoryUpgrade.prepare();
       _ledgerStartedAt ??= DateTime.now().toUtc().toIso8601String();
       _stateBox = await Hive.openBox<String>('warehouse_state_v1');
       final saved = _stateBox!.get('state');
@@ -891,6 +910,25 @@ class WarehouseProvider with ChangeNotifier {
             replacesId: batch.id, reason: 'Correction', requestId: requestId);
       });
 
+  Future<void> configureMaterial(String id,
+          {required String name,
+          required String sku,
+          required List<Map<String, dynamic>> unitConversions}) =>
+      _post(() {
+        name = StockValidation.name(name);
+        sku = StockValidation.name(sku);
+        final material = _materials.firstWhere((m) => m.id == id);
+        if (_materials
+            .any((m) => m.id != id && (m.name == name || m.sku == sku))) {
+          throw ArgumentError('Use a unique raw material name and SKU.');
+        }
+        InventoryUnits.validateConversions(material.unit, unitConversions);
+        material.name = name;
+        material.sku = sku;
+        material.unitConversions =
+            unitConversions.map((c) => Map<String, dynamic>.from(c)).toList();
+      });
+
   Future<void> receivePurchase(
           {required String supplier,
           required String materialName,
@@ -970,17 +1008,31 @@ class WarehouseProvider with ChangeNotifier {
         final id = RecordId.create();
         final lines = <TradeLine>[];
         for (final item in items) {
-          _receiveStock(
-              item.name, item.quantity, item.unit, item.unitPriceMinor / 100,
+          final matches = _materials.where((m) => item.itemId != null
+              ? m.id == item.itemId
+              : m.name == item.name.trim());
+          final existing = matches.isEmpty ? null : matches.single;
+          if (item.itemId != null && existing == null) {
+            throw StateError('Material not found.');
+          }
+          final baseUnit = existing?.unit ?? item.unit;
+          final conversion = InventoryUnits.snapshot(item.quantity, item.unit,
+              baseUnit, existing?.unitConversions ?? []);
+          final baseQuantity = (conversion['baseQuantity'] as num).toDouble();
+          final name = existing?.name ?? item.name;
+          _receiveStock(name, baseQuantity, baseUnit,
+              item.unitPriceMinor / 100 * item.quantity / baseQuantity,
               documentId: id, priceCurrency: currency);
-          final material =
-              _materials.firstWhere((m) => m.name == item.name.trim());
+          final material = _materials.firstWhere((m) => m.name == name.trim());
           lines.add(TradeLine(
               itemId: material.id,
               itemName: material.name,
-              unit: material.unit,
+              unit: item.unit,
               quantity: item.quantity,
-              unitPriceMinor: item.unitPriceMinor));
+              unitPriceMinor: item.unitPriceMinor,
+              stockQuantity: baseQuantity,
+              stockUnit: baseUnit,
+              conversion: conversion));
         }
         final first = lines.first;
         _purchases.add(TradeDocument(
@@ -1006,6 +1058,9 @@ class WarehouseProvider with ChangeNotifier {
         reason = StockValidation.name(reason);
         final receipt = _purchases.firstWhere((p) => p.id == id,
             orElse: () => throw StateError('Receipt not found.'));
+        if (receipt.purchaseKind == 'trading') {
+          throw StateError('Use the finished-goods purchase return action.');
+        }
         if (paidFor(receipt) != 0) {
           throw StateError(
               'Record the actual refund of all payments before returning goods.');
@@ -1015,11 +1070,11 @@ class WarehouseProvider with ChangeNotifier {
         }
         for (final line in receipt.lines) {
           final material = _materials.firstWhere((m) => m.id == line.itemId);
-          if (material.quantity < line.quantity) {
+          if (material.quantity < line.baseQuantity) {
             throw StateError(
                 'Received stock has been consumed; reversal would make stock negative.');
           }
-          material.quantity -= line.quantity;
+          material.quantity -= line.baseQuantity;
         }
         final reversal = TradeDocument(
             number: 'PUR-${(_purchases.length + 1).toString().padLeft(6, '0')}',
@@ -1045,7 +1100,7 @@ class WarehouseProvider with ChangeNotifier {
               materialId: line.itemId,
               documentId: reversal.id,
               materialName: line.itemName,
-              quantity: line.quantity,
+              quantity: line.baseQuantity,
               type: 'OUT',
               date: reversal.date));
         }

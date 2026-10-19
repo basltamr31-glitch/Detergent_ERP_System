@@ -1,3 +1,4 @@
+import 'finished_stock.dart';
 import 'access_control.dart';
 import 'accounting.dart';
 import 'dart:convert';
@@ -54,7 +55,12 @@ class TransferService {
       required String unit,
       required int unitPriceMinor,
       required String currency,
-      required String requestId}) async {
+      required String requestId,
+      String? productId,
+      int? costMinor,
+      String? costCurrency,
+      String costStatus = 'unknown',
+      String costReference = ''}) async {
     AccessControl.require('warehouse');
     InventoryCoordinator.check();
     Accounting.checkPeriod(warehouse.closedThrough);
@@ -66,10 +72,19 @@ class TransferService {
     if (!Money.currencies.contains(currency) || requestId.trim().isEmpty) {
       throw ArgumentError('Currency and request are required.');
     }
+    if (costStatus == 'confirmed' && costReference.trim().isEmpty) { throw ArgumentError('Confirmed cost needs a reviewed reference.'); }
     final prior = warehouse.transfers.where((t) => t.requestId == requestId);
     if (prior.isNotEmpty) {
       final p = prior.single;
+      final lots = shop.stockLots.where((l) => l['id'] == p.id);
       if (p.batchId != batchId ||
+          (productId != null && p.productId != productId) ||
+          (lots.isNotEmpty &&
+              (lots.single['costMinor'] != costMinor ||
+                  lots.single['currency'] != costCurrency ||
+                  lots.single['costStatus'] != costStatus ||
+                  (lots.single['costReference'] ?? '') !=
+                      costReference.trim())) ||
           p.sourceQuantity != sourceQuantity ||
           p.sourceUnit != source ||
           p.productName != name ||
@@ -104,27 +119,31 @@ class TransferService {
     }
     final wh = StateSchema.object(jsonDecode(warehouse.exportState()));
     final sh = StateSchema.object(jsonDecode(shop.exportState()));
-    final matching = (sh['products'] as List).where((p) => p['name'] == name);
+    final matching = (sh['products'] as List).where(
+        (p) => productId != null ? p['id'] == productId : p['name'] == name);
     final Map<String, dynamic> product;
     if (matching.isEmpty) {
+      if (productId != null) { throw StateError('Select an existing finished SKU.'); }
       product = {
         'id': RecordId.create(),
         'name': name,
         'quantity': 0.0,
         'unit': destination,
-        'price': unitPriceMinor / 100
+        'price': unitPriceMinor / 100,
+        'sku': 'SKU-${RecordId.create()}',
+        'unitConversions': <Map<String, dynamic>>[]
       };
       (sh['products'] as List).add(product);
+      (sh['stockBaseline'] as Map)[product['id']] = 0.0;
     } else {
       product = StateSchema.object(matching.single);
-      if (product['unit'] != destination) {
+      if (product['unit'] != destination || product['name'] != name) {
         throw ArgumentError('Use the existing product unit.');
       }
       final index =
           (sh['products'] as List).indexWhere((p) => p['id'] == product['id']);
       sh['products'][index] = product;
     }
-    product['quantity'] = (product['quantity'] as num).toDouble() + quantity;
     product['price'] = unitPriceMinor / 100;
     final transfer = StockTransfer(
         id: RecordId.create(),
@@ -147,7 +166,11 @@ class TransferService {
         requestId: requestId,
         unitPriceMinor: unitPriceMinor,
         currency: currency);
-    await _commit(warehouse, shop, wh, sh, transfer);
+    await _commit(warehouse, shop, wh, sh, transfer,
+        costMinor: costMinor,
+        costCurrency: costCurrency,
+        costStatus: costStatus,
+        costReference: costReference.trim());
   }
 
   static Future<void> reverse(
@@ -203,12 +226,43 @@ class TransferService {
     await _commit(warehouse, shop, wh, sh, transfer);
   }
 
-  static Future<void> _commit(
-      WarehouseProvider warehouse,
-      ShopProvider shop,
-      Map<String, dynamic> wh,
-      Map<String, dynamic> sh,
-      StockTransfer transfer) async {
+  static Future<void> _commit(WarehouseProvider warehouse, ShopProvider shop,
+      Map<String, dynamic> wh, Map<String, dynamic> sh, StockTransfer transfer,
+      {int? costMinor,
+      String? costCurrency,
+      String costStatus = 'unknown',
+      String costReference = ''}) async {
+    if (transfer.reversalOf == null) {
+      FinishedStock.receive(sh,
+          lotId: transfer.id,
+          productId: transfer.productId,
+          sourceKind: 'manufacturing',
+          sourceId: transfer.batchId,
+          quantity: transfer.quantity,
+          unit: transfer.unit,
+          date: transfer.date.toIso8601String(),
+          lot: transfer.lot,
+          expiry: transfer.expiry,
+          costMinor: costMinor,
+          currency: costCurrency,
+          costStatus: costStatus,
+          costReference: costReference,
+          actor: transfer.actor,
+          requestId: transfer.requestId);
+    } else {
+      FinishedStock.record(sh,
+          productId: transfer.productId,
+          sourceId: transfer.id,
+          kind: 'transferReturn',
+          allocations: {transfer.reversalOf!: transfer.quantity},
+          date: transfer.date.toIso8601String(),
+          actor: transfer.actor,
+          requestId: transfer.requestId,
+          direction: -1);
+      FinishedStock.lots(sh)
+              .firstWhere((l) => l['id'] == transfer.reversalOf)['status'] =
+          'returned';
+    }
     wh['transfers'].add(transfer.toJson());
     sh['transfers'].add(transfer.toJson());
     await commitStates(warehouse, shop, wh, sh);

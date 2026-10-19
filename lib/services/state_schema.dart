@@ -1,3 +1,5 @@
+import 'stock_schema.dart';
+import 'inventory_units.dart';
 import '../models/journal_entry.dart';
 import '../models/trade_document.dart';
 import '../models/document_payment.dart';
@@ -88,7 +90,8 @@ class StateSchema {
   }
 
   static void inventory(String key, Map<String, dynamic> data) {
-    if (![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].contains(data['version'])) {
+    if (![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
+        .contains(data['version'])) {
       throw const FormatException('Unsupported inventory version.');
     }
     final ids = <String>{};
@@ -152,6 +155,24 @@ class StateSchema {
       }
     }
     if (data['version'] >= 3) _documents(key, data, ids);
+    if (data['version'] == 13) {
+      if (key == 'shop') {
+        StockSchema.validate(data);
+      } else {
+        final codes = <String>{};
+        for (final m in data['materials'] as List) {
+          text(m['sku'], required: true);
+          if (!codes.add(m['sku'])) {
+            throw const FormatException('Duplicate raw SKU.');
+          }
+          InventoryUnits.validateConversions(
+              m['unit'],
+              (m['unitConversions'] as List)
+                  .map((c) => Map<String, dynamic>.from(c))
+                  .toList());
+        }
+      }
+    }
   }
 
   static void _documents(
@@ -206,11 +227,18 @@ class StateSchema {
           !tokens.add(doc['requestId'])) {
         throw const FormatException('Duplicate business document.');
       }
+      final tradingPurchase = key == 'warehouse' &&
+          data['version'] >= 13 &&
+          doc['purchaseKind'] == 'trading';
+      if (key == 'warehouse' &&
+          !['raw', 'trading'].contains(doc['purchaseKind'] ?? 'raw')) {
+        throw const FormatException('Invalid purchase destination.');
+      }
       final originalType = key == 'warehouse' ? 'purchase' : 'sale';
       final returnType = key == 'warehouse' ? 'purchaseReturn' : 'saleReturn';
       if (![originalType, returnType].contains(doc['type']) ||
           !Money.currencies.contains(doc['currency']) ||
-          !stocks.containsKey(doc['itemId'])) {
+          (!tradingPurchase && !stocks.containsKey(doc['itemId']))) {
         throw const FormatException('Invalid document reference.');
       }
       for (final field in ['unitPriceMinor', 'totalMinor', 'paidMinor']) {
@@ -228,7 +256,7 @@ class StateSchema {
         for (final field in ['itemId', 'itemName', 'unit']) {
           text(line[field], required: true);
         }
-        if (!stocks.containsKey(line['itemId']) ||
+        if ((!tradingPurchase && !stocks.containsKey(line['itemId'])) ||
             !lineIds.add(line['itemId']) ||
             line['unitPriceMinor'] is! int ||
             line['totalMinor'] is! int) {
@@ -431,7 +459,7 @@ class StateSchema {
       }
     }
     if (data['version'] >= 7) _transfers(key, data, ids, tokens);
-    if (data['version'] >= 12 && key == 'shop') {
+    if (data['version'] == 12 && key == 'shop') {
       final transfers = {for (final t in data['transfers'] as List) t['id']: t};
       final used = <String, double>{};
       void allocations(dynamic value, String itemId, double maximum,
@@ -639,7 +667,9 @@ class StateSchema {
           if (batch == null ||
               batch['kind'] != 'production' ||
               batch['requestId'] != o['id'] ||
-              batch['quantity'] != o['quantity'] ||
+              batch['quantity'] !=
+                  ((o['completion'] as Map?)?['actualQuantity'] ??
+                      o['quantity']) ||
               batch['name'] != o['name']) {
             throw const FormatException('Missing order production batch.');
           }
@@ -647,7 +677,9 @@ class StateSchema {
             for (final e in (batch['materials'] as Map).entries)
               batch['materialIds'][e.key]: e.value
           };
-          if (jsonEncode(ingredients) != jsonEncode(o['materials'])) {
+          if (jsonEncode(ingredients) !=
+              jsonEncode((o['completion'] as Map?)?['actualIngredients'] ??
+                  o['materials'])) {
             throw const FormatException(
                 'Order ingredients differ from production.');
           }
@@ -680,7 +712,8 @@ class StateSchema {
         throw const FormatException('Stock count does not reconcile.');
       }
     }
-    for (final doc in trade) {
+    for (final doc
+        in trade.where((d) => (d['purchaseKind'] ?? 'raw') == 'raw')) {
       final movements = (data['transactions'] as List)
           .where((t) => t['documentId'] == doc['id'])
           .toList();
@@ -692,7 +725,8 @@ class StateSchema {
         if (movements
                 .where((m) =>
                     m['materialId'] == line['itemId'] &&
-                    m['quantity'] == line['quantity'] &&
+                    m['quantity'] ==
+                        (line['stockQuantity'] ?? line['quantity']) &&
                     m['type'] == (doc['reversalOf'] == null ? 'IN' : 'OUT'))
                 .length !=
             1) {
@@ -731,6 +765,9 @@ class StateSchema {
   static void pair(Map<String, dynamic> warehouse, Map<String, dynamic> shop) {
     inventory('warehouse', warehouse);
     inventory('shop', shop);
+    if (warehouse['version'] == 13 && shop['version'] == 13) {
+      StockSchema.pair(warehouse, shop);
+    }
     if (jsonEncode(warehouse['periodEvents'] ?? []) !=
         jsonEncode(shop['periodEvents'] ?? [])) {
       throw const FormatException('Period event histories differ.');

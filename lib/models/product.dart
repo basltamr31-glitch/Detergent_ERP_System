@@ -26,6 +26,8 @@ class ProductAdapter extends TypeAdapter<Product> {
 
 class Product {
   final String id;
+  String sku;
+  List<Map<String, dynamic>> unitConversions;
   String name;
   double quantity;
   String unit;
@@ -33,11 +35,16 @@ class Product {
 
   Product({
     String? id,
+    String? sku,
+    List<Map<String, dynamic>> unitConversions = const [],
     required this.name,
     this.quantity = 0.0,
     this.unit = '',
     this.unitPrice = 0.0,
-  }) : id = id ?? RecordId.create();
+  })  : id = id ?? RecordId.create(),
+        sku = sku ?? '',
+        unitConversions =
+            unitConversions.map((u) => Map<String, dynamic>.from(u)).toList();
 
   double get totalPrice => quantity * unitPrice;
 }

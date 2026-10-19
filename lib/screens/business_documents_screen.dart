@@ -1,8 +1,9 @@
+import '../services/trading_purchase_service.dart';
+import '../services/record_id.dart';
 import '../services/access_control.dart';
 import 'package:printing/printing.dart';
 import '../services/document_report.dart';
 import '../models/document_payment.dart';
-import '../services/record_id.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/warehouse_provider.dart';
@@ -22,6 +23,7 @@ class BusinessDocumentsScreen extends StatefulWidget {
 
 class _BusinessDocumentsScreenState extends State<BusinessDocumentsScreen> {
   String _query = '';
+  String _purchaseFilter = 'all', _saleSource = 'all';
   Widget _search(BuildContext context) => Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: TextFormField(
@@ -33,6 +35,25 @@ class _BusinessDocumentsScreenState extends State<BusinessDocumentsScreen> {
           onChanged: (v) => setState(() => _query = v.trim().toLowerCase())));
   String t(BuildContext context, String en, String ar) =>
       Localizations.localeOf(context).languageCode == 'ar' ? ar : en;
+  String _allocationCost(
+      BuildContext context, TradeDocument document, String lotId) {
+    final moves = context.read<ShopProvider>().stockMovements.where((m) =>
+        m['sourceId'] == document.id &&
+        m['lotId'] == lotId &&
+        ['sale', 'saleReturn'].contains(m['kind']));
+    if (moves.isEmpty || moves.first['costMinor'] == null) {
+      return t(context, 'Cost unknown', 'التكلفة غير معروفة');
+    }
+    return '${t(context, 'Allocated cost', 'التكلفة المخصصة')}: ${Money.format((moves.first['costMinor'] as int).abs())} ${moves.first['currency']}';
+  }
+
+  bool _matchesSource(BuildContext context, TradeDocument document) {
+    if (_saleSource == 'all') { return true; }
+    final lots = context.read<ShopProvider>().stockLots;
+    return document.lines.any((line) => line.lots.keys.any((id) =>
+        lots.any((l) => l['id'] == id && l['sourceKind'] == _saleSource)));
+  }
+
   Future<void> _reverse(
       BuildContext context, Future<void> Function(String) action) async {
     String reason = '';
@@ -260,7 +281,14 @@ class _BusinessDocumentsScreenState extends State<BusinessDocumentsScreen> {
                           purchase: true,
                           busy: warehouse.isSaving,
                           reversed: warehouse.isPurchaseReversed,
-                          onReverse: warehouse.reversePurchase,
+                          onReverse: (id, reason) => warehouse.purchases
+                                      .firstWhere((d) => d.id == id)
+                                      .purchaseKind ==
+                                  'trading'
+                              ? TradingPurchaseService.reverse(
+                                  warehouse, shop, id, reason,
+                                  requestId: RecordId.create())
+                              : warehouse.reversePurchase(id, reason),
                           payments: warehouse.payments,
                           paidFor: warehouse.paidFor,
                           onPayment: warehouse.recordPayment,
@@ -328,6 +356,16 @@ class _BusinessDocumentsScreenState extends State<BusinessDocumentsScreen> {
       ]);
   String _productionNumber(WarehouseProvider warehouse, String id) =>
       warehouse.productionDocuments.firstWhere((b) => b.id == id).number;
+  String _lotLabel(BuildContext context, String id) {
+    final shop = context.read<ShopProvider>();
+    final lots = shop.stockLots.where((l) => l['id'] == id);
+    if (lots.isNotEmpty) {
+      return '${lots.first['lot']} / ${lots.first['sourceKind']} / ${lots.first['sourceId']}';
+    }
+    final transfers = shop.transfers.where((t) => t.id == id);
+    return transfers.isEmpty ? id : transfers.first.lot;
+  }
+
   Widget _trade(BuildContext context, List<TradeDocument> docs,
           {required bool purchase,
           required bool busy,
@@ -343,6 +381,40 @@ class _BusinessDocumentsScreenState extends State<BusinessDocumentsScreen> {
               onRefund}) =>
       ListView(padding: const EdgeInsets.all(16), children: [
         _search(context),
+        DropdownButtonFormField<String>(
+            key: ValueKey(
+                purchase ? 'purchase-kind-filter' : 'sale-source-filter'),
+            initialValue: purchase ? _purchaseFilter : _saleSource,
+            isExpanded: true,
+            decoration: InputDecoration(
+                labelText: purchase
+                    ? t(context, 'Purchase destination', 'وجهة المشتريات')
+                    : t(context, 'Stock source', 'مصدر المخزون')),
+            items: (purchase
+                    ? <String, String>{
+                        'all': t(context, 'All purchases', 'كل المشتريات'),
+                        'raw': t(context, 'Raw materials', 'المواد الخام'),
+                        'trading':
+                            t(context, 'Trading goods', 'البضائع التجارية')
+                      }
+                    : <String, String>{
+                        'all': t(context, 'All sources', 'كل المصادر'),
+                        'manufacturing':
+                            t(context, 'Manufactured', 'تصنيع داخلي'),
+                        'supplier_purchase': t(
+                            context, 'Supplier purchases', 'مشتريات الموردين'),
+                        'legacy_opening':
+                            t(context, 'Legacy opening', 'رصيد افتتاحي قديم'),
+                        'adjustment':
+                            t(context, 'Stock adjustment', 'تسوية مخزون')
+                      })
+                .entries
+                .map(
+                    (e) => DropdownMenuItem(value: e.key, child: Text(e.value)))
+                .toList(),
+            onChanged: (v) => setState(
+                () => purchase ? _purchaseFilter = v! : _saleSource = v!)),
+        const SizedBox(height: 12),
         FilledButton.icon(
             onPressed: busy ||
                     !AccessControl.allows(purchase ? 'warehouse' : 'sales')
@@ -359,6 +431,10 @@ class _BusinessDocumentsScreenState extends State<BusinessDocumentsScreen> {
         if (docs.isEmpty)
           Text(t(context, 'No documents yet', 'لا توجد مستندات بعد')),
         ...docs.reversed
+            .where((d) => purchase
+                ? (_purchaseFilter == 'all' ||
+                    d.purchaseKind == _purchaseFilter)
+                : _matchesSource(context, d))
             .where((d) =>
                 '${d.number} ${d.party} ${d.lines.map((l) => l.itemName).join(' ')}'
                     .toLowerCase()
@@ -369,6 +445,14 @@ class _BusinessDocumentsScreenState extends State<BusinessDocumentsScreen> {
                     child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          if (purchase)
+                            Text(doc.purchaseKind == 'trading'
+                                ? t(
+                                    context,
+                                    'Trading purchase → finished goods',
+                                    'شراء تجاري ← المنتجات الجاهزة')
+                                : t(context, 'Raw-material purchase',
+                                    'شراء مواد خام')),
                           Text('${doc.number} • ${doc.party}',
                               style:
                                   const TextStyle(fontWeight: FontWeight.bold)),
@@ -376,9 +460,15 @@ class _BusinessDocumentsScreenState extends State<BusinessDocumentsScreen> {
                             Text(
                                 '${line.itemName} • ${line.quantity} ${line.unit} • ${Money.format(line.totalMinor)} ${doc.currency}'),
                           for (final line in doc.lines)
+                            if (line.stockQuantity != null &&
+                                (line.unit != line.baseUnit ||
+                                    line.quantity != line.baseQuantity))
+                              Text(
+                                  '${t(context, 'Stock quantity', 'كمية المخزون')}: ${line.baseQuantity} ${line.baseUnit}'),
+                          for (final line in doc.lines)
                             for (final lot in line.lots.entries)
                               Text(
-                                  '${t(context, 'Lot', 'الدفعة')}: ${context.read<ShopProvider>().transfers.firstWhere((t) => t.id == lot.key).lot} • ${lot.value}'),
+                                  '${t(context, 'Lot', 'الدفعة')}: ${_lotLabel(context, lot.key)} • ${lot.value} • ${_allocationCost(context, doc, lot.key)}'),
                           Text(
                               '${doc.date.toLocal().toString().split('.').first} • ${doc.amount}'),
                           Text(doc.reversalOf != null

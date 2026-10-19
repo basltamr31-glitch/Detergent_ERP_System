@@ -398,7 +398,7 @@ void main() {
     await shop.ready;
     expect(warehouse.loadError, isNull);
     expect(shop.loadError, isNull);
-    expect(jsonDecode(warehouse.exportState())['version'], 12);
+    expect(jsonDecode(warehouse.exportState())['version'], 13);
     expect(warehouse.manufacturedProducts.single.id, 'batch');
     expect(warehouse.purchases, isEmpty);
     expect(shop.sales, isEmpty);

@@ -1,3 +1,7 @@
+import '../services/finished_stock.dart';
+import '../services/inventory_migration.dart';
+import '../services/inventory_upgrade.dart';
+import '../services/inventory_units.dart';
 import '../models/stock_count.dart';
 import '../services/access_control.dart';
 import '../models/journal_entry.dart';
@@ -20,47 +24,82 @@ import '../models/product.dart';
 class ShopProvider with ChangeNotifier {
   final List<Product> _products = [];
   final List<TradeDocument> _sales = [];
-  double lotRemaining(String transferId) {
-    final transfer = _transfers.firstWhere((t) => t.id == transferId);
-    if (transfer.reversalOf != null ||
-        _transfers.any((t) => t.reversalOf == transferId)) {
-      return 0;
-    }
-    double used = 0;
-    for (final sale
-        in _sales.where((s) => s.reversalOf == null && !isSaleReversed(s.id))) {
-      for (final line in sale.lines) {
-        used += line.lots[transferId] ?? 0;
-      }
-    }
-    for (final count in _counts) {
-      used += count.lots[transferId] ?? 0;
-    }
-    return double.parse((transfer.quantity - used).toStringAsFixed(6));
-  }
-
+  final List<Map<String, dynamic>> _stockLots = [], _stockMovements = [];
+  Map<String, dynamic> _stockBaseline = {}, _lotBaseline = {};
+  Map<String, dynamic>? _migration;
+  List<Map<String, dynamic>> get stockLots => List.unmodifiable(
+      _stockLots.map((l) => Map<String, dynamic>.unmodifiable(l)));
+  List<Map<String, dynamic>> get stockMovements => List.unmodifiable(
+      _stockMovements.map((l) => Map<String, dynamic>.unmodifiable(l)));
+  Map<String, dynamic> _stockState() =>
+      jsonDecode(_snapshot()) as Map<String, dynamic>;
+  double lotRemaining(String id) => FinishedStock.balance(_stockState(), id);
   Map<String, double> _allocateLots(String productId, double quantity,
-      {bool includeExpired = false}) {
-    final lots = <String, double>{};
-    var remaining = quantity;
-    for (final t in _transfers
-        .where((t) => t.productId == productId && t.reversalOf == null)) {
-      if (!includeExpired &&
-          t.expiry.isNotEmpty &&
-          t.expiry.compareTo(Accounting.today()) <= 0) {
-        continue;
+          {bool includeExpired = false}) =>
+      FinishedStock.allocate(_stockState(), productId, quantity,
+          includeExpired: includeExpired);
+  void _acceptStock(Map<String, dynamic> state) {
+    _stockLots
+      ..clear()
+      ..addAll((state['stockLots'] as List)
+          .map((l) => Map<String, dynamic>.from(l)));
+    _stockMovements
+      ..clear()
+      ..addAll((state['stockMovements'] as List)
+          .map((l) => Map<String, dynamic>.from(l)));
+    _stockBaseline = Map<String, dynamic>.from(state['stockBaseline']);
+    _lotBaseline = Map<String, dynamic>.from(state['lotBaseline']);
+    for (final row in state['products'] as List) {
+      final existing = _products.where((p) => p.id == row['id']);
+      if (existing.isEmpty) {
+        _products.add(Product(
+            id: row['id'],
+            name: row['name'],
+            unit: row['unit'],
+            quantity: (row['quantity'] as num).toDouble(),
+            unitPrice: (row['price'] as num).toDouble(),
+            sku: row['sku'],
+            unitConversions: (row['unitConversions'] as List)
+                .map((c) => Map<String, dynamic>.from(c))
+                .toList()));
+      } else {
+        existing.single.quantity = (row['quantity'] as num).toDouble();
       }
-      final available = lotRemaining(t.id);
-      final take = remaining < available ? remaining : available;
-      if (take > 0) {
-        lots[t.id] = take;
-        remaining = double.parse((remaining - take).toStringAsFixed(6));
-      }
-      if (remaining <= 0) break;
     }
-    return lots;
   }
 
+  Future<String> registerProduct(String name, String unit, String sku) async {
+    String result = '';
+    await _post(() {
+      if (_products.any((p) => p.name == name.trim() || p.sku == sku.trim())) {
+        throw ArgumentError('Use a unique product name and SKU.');
+      }
+      final state = _stockState();
+      result = FinishedStock.ensureProduct(state,
+          name: name, unit: unit, sku: sku)['id'];
+      _acceptStock(state);
+    }, permission: 'warehouse');
+    return result;
+  }
+
+  Future<void> configureProduct(String id,
+          {required String name,
+          required String sku,
+          required List<Map<String, dynamic>> unitConversions}) =>
+      _post(() {
+        name = StockValidation.name(name);
+        sku = StockValidation.name(sku);
+        final p = _products.firstWhere((p) => p.id == id);
+        if (_products.any((other) =>
+            other.id != id && (other.name == name || other.sku == sku))) {
+          throw ArgumentError('Use a unique name and SKU.');
+        }
+        InventoryUnits.validateConversions(p.unit, unitConversions);
+        p.name = name;
+        p.sku = sku;
+        p.unitConversions =
+            unitConversions.map((c) => Map<String, dynamic>.from(c)).toList();
+      }, permission: 'warehouse');
   final List<StockCount> _counts = [];
   List<StockCount> get counts => List.unmodifiable(_counts);
   Future<void> countStock(String itemId, double counted, String reason,
@@ -90,12 +129,38 @@ class ShopProvider with ChangeNotifier {
             reason: reason,
             date: DateTime.now(),
             requestId: requestId,
+            stockTracked: true,
             lots: counted < item.quantity
                 ? _allocateLots(itemId, item.quantity - counted,
                     includeExpired: true)
                 : const {});
 
-        item.quantity = counted;
+        final state = _stockState();
+        if (counted < item.quantity) {
+          FinishedStock.record(state,
+              productId: item.id,
+              sourceId: count.id,
+              kind: 'count_out',
+              allocations: count.lots,
+              date: count.date.toIso8601String(),
+              actor: AccessControl.actor,
+              requestId: requestId,
+              direction: -1);
+          (state['products'] as List)
+              .firstWhere((p) => p['id'] == item.id)['quantity'] = counted;
+        } else {
+          FinishedStock.receive(state,
+              lotId: count.id,
+              productId: item.id,
+              sourceKind: 'adjustment',
+              sourceId: count.id,
+              quantity: counted - item.quantity,
+              unit: item.unit,
+              date: count.date.toIso8601String(),
+              actor: AccessControl.actor,
+              requestId: requestId);
+        }
+        _acceptStock(state);
         _counts.add(count);
       }, permission: 'warehouse');
   final List<JournalEntry> _journals = [];
@@ -294,6 +359,8 @@ class ShopProvider with ChangeNotifier {
       name: p.name,
       quantity: p.quantity,
       unit: p.unit,
+      sku: p.sku,
+      unitConversions: p.unitConversions,
       unitPrice: p.unitPrice)));
 
   ShopProvider() {
@@ -316,7 +383,12 @@ class ShopProvider with ChangeNotifier {
   }
 
   String _snapshot() => jsonEncode({
-        'version': 12,
+        'version': 13,
+        'stockLots': _stockLots,
+        'stockMovements': _stockMovements,
+        'stockBaseline': _stockBaseline,
+        'lotBaseline': _lotBaseline,
+        if (_migration != null) 'migration': _migration,
         'counts': _counts.map((c) => c.toJson()).toList(),
         'journals': _journals.map((j) => j.toJson()).toList(),
         'closedThrough': _closedThrough,
@@ -333,14 +405,23 @@ class ShopProvider with ChangeNotifier {
                   'name': p.name,
                   'quantity': p.quantity,
                   'unit': p.unit,
-                  'price': p.unitPrice
+                  'price': p.unitPrice,
+                  'sku': p.sku.isEmpty ? 'SKU-${p.id}' : p.sku,
+                  'unitConversions': p.unitConversions
                 })
             .toList()
       });
   void _restore(String value) {
-    final data = jsonDecode(value) as Map<String, dynamic>;
+    final data =
+        InventoryMigration.shop(jsonDecode(value) as Map<String, dynamic>);
     StateSchema.inventory('shop', data);
-    if (![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].contains(data['version'])) {
+    _acceptStock(data);
+    _migration = data['migration'] == null
+        ? null
+        : Map<String, dynamic>.from(data['migration']);
+    StateSchema.inventory('shop', data);
+    if (![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
+        .contains(data['version'])) {
       throw StateError('Unsupported inventory version.');
     }
     _counts
@@ -374,6 +455,10 @@ class ShopProvider with ChangeNotifier {
       ..clear()
       ..addAll((data['products'] as List).map((p) => Product(
           id: p['id'] as String?,
+          sku: p['sku'],
+          unitConversions: (p['unitConversions'] as List)
+              .map((c) => Map<String, dynamic>.from(c))
+              .toList(),
           name: p['name'],
           quantity: (p['quantity'] as num).toDouble(),
           unit: p['unit'],
@@ -390,6 +475,7 @@ class ShopProvider with ChangeNotifier {
     loadError = null;
     notifyListeners();
     try {
+      await InventoryUpgrade.prepare();
       _ledgerStartedAt ??= DateTime.now().toUtc().toIso8601String();
       _stateBox = await Hive.openBox<String>('shop_state_v1');
       final saved = _stateBox!.get('state');
@@ -403,6 +489,8 @@ class ShopProvider with ChangeNotifier {
         _products.clear();
         final box = await Hive.openBox<Product>('shop_products');
         _products.addAll(box.values);
+        final old = _stockState()..['version'] = 12;
+        _acceptStock(InventoryMigration.shop(old));
 
         StateSchema.inventory(
             'shop', jsonDecode(_snapshot()) as Map<String, dynamic>);
@@ -460,26 +548,26 @@ class ShopProvider with ChangeNotifier {
   Future<void> addProduct(
           String name, double quantity, String unit, double unitPrice) =>
       _post(() {
-        name = StockValidation.name(name);
         StockValidation.positive(quantity);
         StockValidation.price(unitPrice);
-        if (unit.trim().isEmpty) throw ArgumentError('Unit is required.');
-        final index = _products.indexWhere((p) => p.name == name);
-        if (index < 0) {
-          _products.add(Product(
-              name: name,
-              quantity: quantity,
-              unit: unit,
-              unitPrice: unitPrice));
-        } else {
-          final product = _products[index];
-          if (product.unit != unit) {
-            throw ArgumentError('Use the existing stock unit.');
-          }
-          StockValidation.positive(product.quantity + quantity);
-          product.quantity += quantity;
-          product.unitPrice = unitPrice;
-        }
+        final state = _stockState();
+        final product = FinishedStock.ensureProduct(state,
+            name: name, unit: unit, salePrice: unitPrice);
+        product['price'] = unitPrice;
+        final id = RecordId.create();
+        FinishedStock.receive(state,
+            lotId: id,
+            productId: product['id'],
+            sourceKind: 'adjustment',
+            sourceId: id,
+            quantity: quantity,
+            unit: unit,
+            date: DateTime.now().toIso8601String(),
+            actor: AccessControl.actor,
+            requestId: id);
+        _acceptStock(state);
+        _products.firstWhere((p) => p.id == product['id']).unitPrice =
+            unitPrice;
       }, permission: 'warehouse');
 
   Future<void> sellProduct(String name, double quantity,
@@ -527,14 +615,22 @@ class ShopProvider with ChangeNotifier {
         }
         final lines = items.map((input) {
           final product = _products.firstWhere(
-              (p) => p.name == input.name.trim(),
+              (p) => input.itemId != null
+                  ? p.id == input.itemId
+                  : p.name == input.name.trim(),
               orElse: () => throw StateError('Product not found.'));
+          final enteredUnit = input.unit.isEmpty ? product.unit : input.unit;
+          final conversion = InventoryUnits.snapshot(input.quantity,
+              enteredUnit, product.unit, product.unitConversions);
           return TradeLine(
               itemId: product.id,
               itemName: product.name,
-              unit: product.unit,
+              unit: enteredUnit,
               quantity: input.quantity,
-              unitPriceMinor: input.unitPriceMinor);
+              unitPriceMinor: input.unitPriceMinor,
+              stockQuantity: (conversion['baseQuantity'] as num).toDouble(),
+              stockUnit: product.unit,
+              conversion: conversion);
         }).toList();
         if (lines.map((l) => l.itemId).toSet().length != lines.length) {
           throw ArgumentError('Combine duplicate items into one line.');
@@ -561,31 +657,40 @@ class ShopProvider with ChangeNotifier {
           }
           return;
         }
+        final documentId = RecordId.create();
+        final state = _stockState();
         for (var i = 0; i < lines.length; i++) {
           final line = lines[i];
-          final product = _products.firstWhere((p) => p.id == line.itemId);
-          final expired = _transfers
-              .where((t) =>
-                  t.productId == product.id &&
-                  t.reversalOf == null &&
-                  t.expiry.isNotEmpty &&
-                  t.expiry.compareTo(Accounting.today()) <= 0)
-              .fold(0.0, (sum, t) => sum + lotRemaining(t.id));
-          if (product.quantity - expired + 0.0000001 < line.quantity) {
-            throw StateError(
-                'Insufficient unexpired stock for ${line.itemName}.');
-          }
+          final allocations =
+              FinishedStock.allocate(state, line.itemId, line.baseQuantity);
           lines[i] = TradeLine(
               itemId: line.itemId,
               itemName: line.itemName,
               unit: line.unit,
               quantity: line.quantity,
               unitPriceMinor: line.unitPriceMinor,
-              lots: _allocateLots(product.id, line.quantity));
-          product.quantity -= line.quantity;
+              stockQuantity: line.stockQuantity,
+              stockUnit: line.stockUnit,
+              conversion: line.conversion,
+              lots: allocations);
+          FinishedStock.record(state,
+              productId: line.itemId,
+              sourceId: documentId,
+              kind: 'sale',
+              allocations: allocations,
+              date: DateTime.now().toIso8601String(),
+              actor: AccessControl.actor,
+              requestId: token,
+              direction: -1);
+          final p = (state['products'] as List)
+              .firstWhere((p) => p['id'] == line.itemId);
+          p['quantity'] = (p['quantity'] as num).toDouble() - line.baseQuantity;
         }
+        _acceptStock(state);
         final first = lines.first;
         _sales.add(TradeDocument(
+            id: documentId,
+            stockTracked: true,
             number: 'SAL-${(_sales.length + 1).toString().padLeft(6, '0')}',
             type: 'sale',
             date: DateTime.now(),
@@ -616,10 +721,67 @@ class ShopProvider with ChangeNotifier {
         }
         for (final line in sale.lines) {
           final product = _products.firstWhere((p) => p.id == line.itemId);
-          StockValidation.positive(product.quantity + line.quantity);
-          product.quantity += line.quantity;
+          StockValidation.positive(product.quantity + line.baseQuantity);
+          product.quantity += line.baseQuantity;
         }
+        final reversalId = RecordId.create();
+        final state = _stockState();
+        if (sale.stockTracked) {
+          for (final line in sale.lines) {
+            FinishedStock.record(state,
+                productId: line.itemId,
+                sourceId: reversalId,
+                kind: 'saleReturn',
+                allocations: line.lots,
+                date: DateTime.now().toIso8601String(),
+                actor: AccessControl.actor,
+                requestId: reversalId,
+                costOverrides: {
+                  for (final m in _stockMovements.where((m) =>
+                      m['kind'] == 'sale' &&
+                      m['sourceId'] == sale.id &&
+                      m['productId'] == line.itemId))
+                    m['lotId'] as String:
+                        m['costMinor'] == null ? null : -(m['costMinor'] as int)
+                });
+          }
+        } else {
+          for (final line in sale.lines) {
+            final missing =
+                line.baseQuantity - line.lots.values.fold(0.0, (a, b) => a + b);
+            if (line.lots.isNotEmpty) {
+              FinishedStock.record(state,
+                  productId: line.itemId,
+                  sourceId: reversalId,
+                  kind: 'saleReturn',
+                  allocations: line.lots,
+                  date: DateTime.now().toIso8601String(),
+                  actor: AccessControl.actor,
+                  requestId: reversalId);
+            }
+            if (missing > 0.0000001) {
+              final lotId = RecordId.create();
+              // Quantity has already been restored above; receive only its layer.
+              final p = (state['products'] as List)
+                  .firstWhere((p) => p['id'] == line.itemId);
+              p['quantity'] = (p['quantity'] as num).toDouble() - missing;
+              FinishedStock.receive(state,
+                  lotId: lotId,
+                  productId: line.itemId,
+                  sourceKind: 'legacy_opening',
+                  sourceId: reversalId,
+                  quantity: missing,
+                  unit: line.baseUnit,
+                  date: DateTime.now().toIso8601String(),
+                  actor: AccessControl.actor,
+                  requestId: reversalId);
+            }
+          }
+        }
+        _acceptStock(state);
         _sales.add(TradeDocument(
+            id: reversalId,
+            stockTracked: sale.stockTracked,
             number: 'SAL-${(_sales.length + 1).toString().padLeft(6, '0')}',
             type: 'saleReturn',
             date: DateTime.now(),

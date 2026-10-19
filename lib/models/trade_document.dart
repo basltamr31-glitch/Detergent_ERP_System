@@ -18,6 +18,8 @@ class TradeDocument {
       required this.unitPriceMinor,
       required this.totalMinor,
       this.paidMinor = 0,
+      this.purchaseKind = 'raw',
+      this.stockTracked = false,
       this.reversalOf,
       this.partyId,
       this.reason = '',
@@ -52,6 +54,8 @@ class TradeDocument {
   final DateTime date;
   final double quantity;
   final int unitPriceMinor, totalMinor, paidMinor;
+  final String purchaseKind;
+  final bool stockTracked;
   final String? reversalOf, partyId;
   int get outstandingMinor => totalMinor - paidMinor;
   String get amount => '${Money.format(totalMinor)} $currency';
@@ -75,10 +79,14 @@ class TradeDocument {
         'reversalOf': reversalOf,
         'reason': reason,
         'reference': reference,
-        'requestId': requestId
+        'requestId': requestId,
+        'purchaseKind': purchaseKind,
+        'stockTracked': stockTracked
       };
   factory TradeDocument.fromJson(Map<String, dynamic> data) => TradeDocument(
       id: data['id'],
+      purchaseKind: data['purchaseKind'] ?? 'raw',
+      stockTracked: data['stockTracked'] ?? false,
       actor: Map<String, String>.from(data['actor'] ??
           {'id': 'legacy', 'name': 'Legacy record', 'role': 'legacy'}),
       lines: (data['lines'] as List?)

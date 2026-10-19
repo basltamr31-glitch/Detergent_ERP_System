@@ -1,3 +1,4 @@
+import 'services/inventory_upgrade.dart';
 import 'services/auth_service.dart';
 import 'services/access_control.dart';
 import 'screens/auth_screen.dart';
@@ -42,6 +43,7 @@ void main() async {
 
     await TransferService.recover();
     await BackupService.recover();
+    await InventoryUpgrade.prepare();
     await Hive.openBox<String>('costing_drafts_v1');
 
     AccessControl.enabled = true;

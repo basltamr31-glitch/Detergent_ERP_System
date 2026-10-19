@@ -11,11 +11,13 @@ class StockCount {
       required this.date,
       required this.requestId,
       Map<String, String>? actor,
+      this.stockTracked = false,
       Map<String, double> lots = const {}})
       : lots = Map.unmodifiable(lots),
         id = id ?? RecordId.create(),
         actor = Map.unmodifiable(actor ?? AccessControl.actor);
   final Map<String, double> lots;
+  final bool stockTracked;
   final String id, itemId, reason, requestId;
   final double before, after;
   final DateTime date;
@@ -29,10 +31,12 @@ class StockCount {
         'date': date.toIso8601String(),
         'requestId': requestId,
         'actor': actor,
-        'lots': lots
+        'lots': lots,
+        'stockTracked': stockTracked
       };
   factory StockCount.fromJson(Map<String, dynamic> d) => StockCount(
       id: d['id'],
+      stockTracked: d['stockTracked'] ?? false,
       lots: (d['lots'] as Map? ?? {})
           .map((k, v) => MapEntry(k as String, (v as num).toDouble())),
       itemId: d['itemId'],
