@@ -54,8 +54,10 @@ class _TransfersScreenState extends State<TransfersScreen> {
             bool quantity = false,
             bool optional = false}) =>
         Padding(
+            key: ValueKey('transfer-field:$label'),
             padding: const EdgeInsets.only(top: 12),
             child: TextFormField(
+                key: ValueKey('transfer-input:$label'),
                 enabled: !saving,
                 decoration: InputDecoration(labelText: label),
                 onChanged: change,
@@ -64,7 +66,9 @@ class _TransfersScreenState extends State<TransfersScreen> {
                     : TextInputType.text,
                 validator: (v) {
                   try {
-                    if (optional && (v == null || v.trim().isEmpty)) { return null; }
+                    if (optional && (v == null || v.trim().isEmpty)) {
+                      return null;
+                    }
                     if (money) {
                       Money.parse(v ?? '');
                     } else if (quantity) {
@@ -112,6 +116,8 @@ class _TransfersScreenState extends State<TransfersScreen> {
                                           onChanged:
                                               saving ? null : (v) => batch = v),
                                       DropdownButtonFormField<String>(
+                                          key: const ValueKey(
+                                              'transfer-product'),
                                           initialValue: '',
                                           isExpanded: true,
                                           decoration: InputDecoration(
@@ -176,6 +182,8 @@ class _TransfersScreenState extends State<TransfersScreen> {
                                           (v) => price = v,
                                           money: true),
                                       DropdownButtonFormField<String>(
+                                          key: const ValueKey(
+                                              'transfer-reference-currency'),
                                           isExpanded: true,
                                           validator: required,
                                           decoration: InputDecoration(

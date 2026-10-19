@@ -43,3 +43,8 @@ A deterministic cutover validates both candidate states, preserves before-images
 Adds zero-stock SKU registration, product/material unit-definition editors, direct trading receipts, source/cost/movement details, invoice-to-base quantity previews and ID-based sales. Approved sale-ready production can now record actual consumption/yield and QC then atomically receive the selected finished SKU. Planned recipe values remain unchanged; variances require reasons. Bulk output retains the explicit later-packaging route with existing-SKU selection and an optional reviewed total-cost snapshot.
 
 Purchase history distinguishes raw/trading destinations; sales show per-lot source/cost and source filters. The existing Cairo/Arabic/English colors and native platform behavior remain. Four trading and four completion UI cases cover320/1280 widths in both languages; domain tests verify the60-package mixed-source example, frozen conversions, original-lot returns and exact minor-unit cost restoration. All126 named regressions pass; static analysis is clean. Actual batch costs are explicitly recorded/reviewed, not silently inferred from costing drafts; perpetual valuation/COGS and separate WIP/quality-hold execution remain outside this delivery.
+
+
+## Warehouse phase 3 — stable packaging editors
+
+Keyed transfer inputs retain their editing state when switching between a new product and a registered SKU. Two English/Arabic regressions enter a source quantity before selecting the SKU and verify deletion/retyping and cancellation preserve the form and original stock. Fixture I/O runs outside widget fake time. The final integrated run passes128 named tests with no analyzer issues; Windows x64 release and universal Android debug APK compile successfully.
