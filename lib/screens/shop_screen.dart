@@ -5,9 +5,15 @@ import 'package:provider/provider.dart';
 import '../widgets/storage_status.dart';
 import '../l10n/app_localizations.dart';
 import '../providers/shop_provider.dart';
+import '../services/access_control.dart';
+import 'finished_product_screen.dart';
+import 'trading_purchase_screen.dart';
 
 class ShopScreen extends StatelessWidget {
   const ShopScreen({super.key});
+
+  String t(BuildContext context, String en, String ar) =>
+      Localizations.localeOf(context).languageCode == 'ar' ? ar : en;
 
   String _translateUnit(String unitKey, AppLocalizations loc) {
     if (unitKey.isEmpty) return '';
@@ -32,10 +38,36 @@ class ShopScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(localizations.shopTitle),
+        title: Text(
+            t(context, 'Finished goods & trading', 'المنتجات الجاهزة والتجارة'),
+            maxLines: 2),
         backgroundColor: Colors.green,
         foregroundColor: Colors.white,
         actions: [
+          IconButton(
+              key: const ValueKey('new-finished-product'),
+              icon: const Icon(Icons.add_box_outlined),
+              tooltip: t(context, 'Register product (zero stock)',
+                  'تسجيل منتج (رصيد صفر)'),
+              onPressed: context.watch<ShopProvider>().isSaving ||
+                      !AccessControl.allows('warehouse')
+                  ? null
+                  : () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) => const FinishedProductScreen()))),
+          IconButton(
+              key: const ValueKey('new-trading-purchase'),
+              icon: const Icon(Icons.local_shipping_outlined),
+              tooltip: t(
+                  context, 'Receive trading purchase', 'استلام مشتريات تجارية'),
+              onPressed: context.watch<ShopProvider>().isSaving ||
+                      !AccessControl.allows('warehouse')
+                  ? null
+                  : () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) => const TradingPurchaseScreen()))),
           IconButton(
               icon: const Icon(Icons.receipt_long),
               tooltip: Localizations.localeOf(context).languageCode == 'ar'
@@ -56,7 +88,26 @@ class ShopScreen extends StatelessWidget {
           }
           final items = provider.products;
           if (items.isEmpty) {
-            return Center(child: Text(localizations.noItemsInStock));
+            return Center(
+                child: Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Column(mainAxisSize: MainAxisSize.min, children: [
+                      const Icon(Icons.inventory_2_outlined,
+                          color: Colors.green, size: 48),
+                      const SizedBox(height: 12),
+                      Text(
+                          t(context, 'Register a finished product to begin',
+                              'سجّل منتجاً جاهزاً للبدء'),
+                          style: Theme.of(context).textTheme.titleLarge,
+                          textAlign: TextAlign.center),
+                      const SizedBox(height: 8),
+                      Text(
+                          t(
+                              context,
+                              'Manufactured and purchased stock share one SKU, while each receipt keeps its source.',
+                              'يجتمع المخزون المصنع والمشترى ضمن صنف واحد مع حفظ مصدر كل استلام.'),
+                          textAlign: TextAlign.center),
+                    ])));
           }
           return ListView.builder(
             itemCount: items.length,
@@ -80,21 +131,29 @@ class ShopScreen extends StatelessWidget {
                                     fontSize: 18, fontWeight: FontWeight.bold)),
                             const SizedBox(height: 8),
                             Text(
-                                '${localizations.availableQuantity}: ${item.quantity.toStringAsFixed(2)} ${_translateUnit(item.unit, localizations)}',
+                                '${t(context, 'SKU', 'رمز الصنف')}: ${item.sku}'),
+                            Text(
+                                '${localizations.availableQuantity}: ${item.quantity.toStringAsFixed(6).replaceFirst(RegExp(r'\.?0+$'), '')} ${_translateUnit(item.unit, localizations)}',
                                 style: const TextStyle(
                                     color: Colors.grey, fontSize: 16)),
                             const SizedBox(height: 4),
                             Text(
-                                '${localizations.unitPriceLabel}: ${item.unitPrice.toStringAsFixed(2)}',
+                                '${t(context, 'Reference sale price', 'سعر البيع المرجعي')}: ${item.unitPrice.toStringAsFixed(2)}',
                                 style: const TextStyle(
                                     color: Colors.grey, fontSize: 14)),
                             const SizedBox(height: 4),
-                            Text(
-                                '${localizations.totalValueLabel}: ${item.totalPrice.toStringAsFixed(2)}',
-                                style: const TextStyle(
-                                    color: Colors.blue,
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold)),
+                            TextButton.icon(
+                                key: ValueKey('product-details-${item.id}'),
+                                onPressed: () => Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (_) => FinishedProductScreen(
+                                            productId: item.id))),
+                                icon: const Icon(Icons.layers_outlined),
+                                label: Text(t(
+                                    context,
+                                    'Sources, costs & movements',
+                                    'المصادر والتكاليف والحركات'))),
                           ],
                         ),
                       ),
@@ -106,7 +165,8 @@ class ShopScreen extends StatelessWidget {
                         style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.green),
                         onPressed: !context.watch<ShopProvider>().isLoaded ||
-                                context.watch<ShopProvider>().isSaving
+                                context.watch<ShopProvider>().isSaving ||
+                                !AccessControl.allows('sales')
                             ? null
                             : () => _showSellDialog(
                                 context, provider, item.name, localizations),
@@ -121,9 +181,11 @@ class ShopScreen extends StatelessWidget {
       ),
       floatingActionButton: FloatingActionButton(
         backgroundColor: Colors.green,
-        tooltip: localizations.addStock,
+        tooltip:
+            t(context, 'Opening stock / adjustment', 'رصيد افتتاحي / تسوية'),
         onPressed: !context.watch<ShopProvider>().isLoaded ||
-                context.watch<ShopProvider>().isSaving
+                context.watch<ShopProvider>().isSaving ||
+                !AccessControl.allows('warehouse')
             ? null
             : () => _showAddStockDialog(
                 context,
@@ -151,11 +213,17 @@ class ShopScreen extends StatelessWidget {
           final total = qty * price;
 
           return AlertDialog(
-            title: Text(localizations.addProductToShop),
+            title: Text(t(
+                context, 'Opening stock / adjustment', 'رصيد افتتاحي / تسوية')),
             content: SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
+                  Text(t(
+                      context,
+                      'Use a trading purchase for supplier products. This adds an opening or adjustment layer with an unknown acquisition cost.',
+                      'استخدم المشتريات التجارية لمنتجات الموردين. يضيف هذا رصيداً افتتاحياً أو تسوية بتكلفة شراء غير معروفة.')),
+                  const SizedBox(height: 12),
                   TextField(
                     controller: nameController,
                     decoration: InputDecoration(
@@ -190,12 +258,13 @@ class ShopScreen extends StatelessWidget {
                     keyboardType:
                         const TextInputType.numberWithOptions(decimal: true),
                     decoration: InputDecoration(
-                        labelText: localizations.unitPriceLabel),
+                        labelText: t(context, 'Reference sale price (not cost)',
+                            'سعر بيع مرجعي (ليس تكلفة)')),
                     onChanged: (_) => setState(() {}),
                   ),
                   const SizedBox(height: 15),
                   Text(
-                      '${localizations.totalValueLabel}: ${total.toStringAsFixed(2)}',
+                      '${t(context, 'Quantity × reference price (not valuation)', 'الكمية × السعر المرجعي (ليس تقييماً للمخزون)')}: ${total.toStringAsFixed(2)}',
                       style: const TextStyle(
                           fontWeight: FontWeight.bold, fontSize: 16)),
                 ],
@@ -224,7 +293,8 @@ class ShopScreen extends StatelessWidget {
                     }
                   }
                 },
-                child: Text(localizations.addStock),
+                child: Text(t(context, 'Post opening / adjustment',
+                    'تسجيل رصيد / تسوية')),
               ),
             ],
           );

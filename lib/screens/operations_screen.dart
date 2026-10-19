@@ -5,6 +5,7 @@ import '../providers/shop_provider.dart';
 import '../services/money.dart';
 import '../services/record_id.dart';
 import '../services/access_control.dart';
+import '../services/production_completion_service.dart';
 import '../widgets/storage_status.dart';
 
 class OperationsScreen extends StatefulWidget {
@@ -401,6 +402,52 @@ class _OperationsScreenState extends State<OperationsScreen> {
                     ]))));
   }
 
+  Future<void> _complete(Map<String, dynamic> order) async {
+    final completed = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => _ProductionCompletionDialog(
+        warehouse: context.read<WarehouseProvider>(),
+        shop: context.read<ShopProvider>(),
+        order: order,
+      ),
+    );
+    if (completed == true && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(t('Production completed and finished goods received',
+              'تم إتمام الإنتاج واستلام المنتجات الجاهزة'))));
+    }
+  }
+
+  Widget _completionSummary(Map<String, dynamic> order, ShopProvider shop) {
+    final completion = order['completion'] as Map;
+    final matching =
+        shop.products.where((p) => p.id == completion['productId']);
+    final productName = matching.isEmpty
+        ? completion['productId'].toString()
+        : matching.single.name;
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(t('Finished goods received', 'تم استلام المنتجات الجاهزة'),
+              style: Theme.of(context).textTheme.titleSmall),
+          Text(
+              '${completion['actualQuantity']} ${completion['unit']} → $productName'),
+          Text(
+              '${t('Manufacturing source lot', 'دفعة مصدر التصنيع')}: ${order['lot']}'),
+          Text(completion['costStatus'] == 'unknown'
+              ? t('Batch cost: unknown', 'تكلفة الدفعة: غير معلومة')
+              : '${t('Total batch cost', 'تكلفة الدفعة الإجمالية')}: ${Money.format(completion['costMinor'])} ${completion['costCurrency']} • ${completion['costStatus'] == 'confirmed' ? t('Confirmed', 'مؤكدة') : t('Estimated', 'تقديرية')}'),
+          if ((completion['varianceReason'] as String).isNotEmpty)
+            Text(
+                '${t('Actual production variance', 'اختلاف التنفيذ الفعلي')}: ${completion['varianceReason']}'),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final warehouse = context.watch<WarehouseProvider>(),
@@ -459,6 +506,19 @@ class _OperationsScreenState extends State<OperationsScreen> {
                                                         in o['events'] as List)
                                                       Text(
                                                           '${stage(e['kind'])} • ${e['actor']['name']} • ${e['reason']}'),
+                                                    if (o['completion'] != null)
+                                                      _completionSummary(
+                                                          o, shop),
+                                                    if (o['status'] ==
+                                                        'approved')
+                                                      Padding(
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .only(top: 12),
+                                                        child: Text(t(
+                                                            'Receive sale-ready goods below. For bulk awaiting packaging, use Release and transfer it later.',
+                                                            'استلم المنتجات الجاهزة للبيع أدناه. للناتج السائب الذي ينتظر التعبئة، استخدم إفراج ثم انقله لاحقًا.')),
+                                                      ),
                                                     if (o['batchId'] != null &&
                                                         warehouse
                                                             .isProductionReversed(
@@ -488,14 +548,33 @@ class _OperationsScreenState extends State<OperationsScreen> {
                                                                     'اعتماد'))),
                                                           if (o['status'] ==
                                                               'approved')
+                                                            FilledButton.icon(
+                                                              key: ValueKey(
+                                                                  'complete-finished-${o['id']}'),
+                                                              onPressed: busy ||
+                                                                      !AccessControl
+                                                                          .allows(
+                                                                              'warehouse')
+                                                                  ? null
+                                                                  : () =>
+                                                                      _complete(
+                                                                          o),
+                                                              icon: const Icon(Icons
+                                                                  .inventory_2_outlined),
+                                                              label: Text(t(
+                                                                  'Complete & receive finished goods',
+                                                                  'إتمام واستلام المنتجات الجاهزة')),
+                                                            ),
+                                                          if (o['status'] ==
+                                                              'approved')
                                                             TextButton(
                                                                 onPressed: busy ||
                                                                         !AccessControl.allows(
                                                                             'warehouse')
                                                                     ? null
                                                                     : () => _action(
-                                                                        t('Release production',
-                                                                            'الإفراج عن الإنتاج'),
+                                                                        t('Complete bulk / prepare later transfer',
+                                                                            'إتمام السائب / التجهيز للنقل لاحقًا'),
                                                                         (reason) => warehouse.releaseOrder(
                                                                             o[
                                                                                 'id'],
@@ -555,5 +634,364 @@ class _OperationsScreenState extends State<OperationsScreen> {
                                                   '${c.reason} • ${c.actor['name']} • ${c.date.toLocal().toString().split('.').first}')))
                                   ])
                             ])))));
+  }
+}
+
+class _ProductionCompletionDialog extends StatefulWidget {
+  const _ProductionCompletionDialog({
+    required this.warehouse,
+    required this.shop,
+    required this.order,
+  });
+  final WarehouseProvider warehouse;
+  final ShopProvider shop;
+  final Map<String, dynamic> order;
+  @override
+  State<_ProductionCompletionDialog> createState() =>
+      _ProductionCompletionDialogState();
+}
+
+class _ProductionCompletionDialogState
+    extends State<_ProductionCompletionDialog> {
+  final _form = GlobalKey<FormState>();
+  final _requestId = RecordId.create();
+  final _name = TextEditingController();
+  final _sku = TextEditingController();
+  final _quality = TextEditingController();
+  final _variance = TextEditingController();
+  final _cost = TextEditingController();
+  final _costReference = TextEditingController();
+  final _actual = <String, TextEditingController>{};
+  late final TextEditingController _quantity;
+  String _product = 'new', _costStatus = 'unknown', _currency = 'USD';
+  bool _saving = false, _qualityPassed = false;
+  String? _error;
+
+  String t(String en, String ar) =>
+      Localizations.localeOf(context).languageCode == 'ar' ? ar : en;
+
+  @override
+  void initState() {
+    super.initState();
+    _quantity =
+        TextEditingController(text: widget.order['quantity'].toString());
+    _name.text = widget.order['name'];
+    for (final e in (widget.order['materials'] as Map).entries) {
+      _actual[e.key as String] =
+          TextEditingController(text: e.value.toString());
+    }
+  }
+
+  @override
+  void dispose() {
+    for (final controller in [
+      _name,
+      _sku,
+      _quality,
+      _variance,
+      _cost,
+      _costReference,
+      _quantity,
+      ..._actual.values,
+    ]) {
+      controller.dispose();
+    }
+    super.dispose();
+  }
+
+  String? _required(String? value) =>
+      (value ?? '').trim().isEmpty ? t('Required', 'مطلوب') : null;
+
+  String? _quantityValidator(String? value) {
+    try {
+      Money.quantity(value ?? '');
+      return null;
+    } catch (_) {
+      return t('Enter a positive quantity with up to six decimals',
+          'أدخل كمية موجبة حتى ست منازل عشرية');
+    }
+  }
+
+  Future<void> _submit() async {
+    if (!_form.currentState!.validate()) return;
+    if (!_qualityPassed) {
+      setState(() => _error = t('Confirm quality checks before receiving goods',
+          'أكد اجتياز فحوص الجودة قبل استلام المنتجات'));
+      return;
+    }
+    setState(() {
+      _saving = true;
+      _error = null;
+    });
+    try {
+      await ProductionCompletionService.complete(
+        widget.warehouse,
+        widget.shop,
+        orderId: widget.order['id'],
+        actualIngredients: {
+          for (final e in _actual.entries) e.key: Money.quantity(e.value.text),
+        },
+        actualQuantity: Money.quantity(_quantity.text),
+        outputUnit: widget.order['unit'],
+        qualityNote: _quality.text,
+        requestId: _requestId,
+        finishedProductId: _product == 'new' ? null : _product,
+        newProductName: _product == 'new' ? _name.text : null,
+        newSku: _product == 'new' ? _sku.text : null,
+        varianceReason: _variance.text,
+        costMinor: _costStatus == 'unknown' ? null : Money.parse(_cost.text),
+        costCurrency: _costStatus == 'unknown' ? null : _currency,
+        costStatus: _costStatus,
+        costReference: _costStatus == 'unknown' ? '' : _costReference.text,
+      );
+      if (mounted) Navigator.pop(context, true);
+    } catch (error) {
+      if (mounted) {
+        setState(() {
+          _saving = false;
+          _error = error.toString();
+        });
+      }
+    }
+  }
+
+  Widget _field({
+    required String key,
+    required TextEditingController controller,
+    required String label,
+    String? helper,
+    String? Function(String?)? validator,
+    bool number = false,
+  }) =>
+      Padding(
+        padding: const EdgeInsets.only(top: 12),
+        child: TextFormField(
+          key: ValueKey(key),
+          controller: controller,
+          enabled: !_saving,
+          keyboardType: number
+              ? const TextInputType.numberWithOptions(decimal: true)
+              : TextInputType.text,
+          textInputAction: TextInputAction.next,
+          validator: validator,
+          decoration: InputDecoration(
+              labelText: label,
+              helperText: helper,
+              helperMaxLines: 4,
+              errorMaxLines: 3),
+        ),
+      );
+
+  @override
+  Widget build(BuildContext context) {
+    final products =
+        widget.shop.products.where((p) => p.unit == widget.order['unit']);
+    return PopScope(
+      canPop: !_saving,
+      child: AlertDialog(
+        title: Text(t('Complete & receive finished goods',
+            'إتمام واستلام المنتجات الجاهزة')),
+        content: SizedBox(
+          width: 560,
+          child: SingleChildScrollView(
+            child: Form(
+              key: _form,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('${widget.order['number']} • ${widget.order['lot']}'),
+                  const SizedBox(height: 8),
+                  Text(t(
+                      'Use this action for finished, sale-ready output in the approved unit. Raw consumption and finished receipt are posted together.',
+                      'استخدم هذا الإجراء للناتج النهائي الجاهز للبيع بوحدة الأمر المعتمدة. يُسجّل استهلاك الخام واستلام الجاهز معًا.')),
+                  const SizedBox(height: 16),
+                  DropdownButtonFormField<String>(
+                    key: const ValueKey('completion-product'),
+                    initialValue: _product,
+                    isExpanded: true,
+                    decoration: InputDecoration(
+                        labelText: t('Finished product / SKU',
+                            'المنتج الجاهز / رمز الصنف')),
+                    items: [
+                      DropdownMenuItem(
+                          value: 'new',
+                          child: Text(t('Create a new finished SKU',
+                              'إنشاء صنف جاهز جديد'))),
+                      for (final p in products)
+                        DropdownMenuItem(
+                            value: p.id,
+                            child: Text('${p.name} • ${p.unit}',
+                                overflow: TextOverflow.ellipsis)),
+                    ],
+                    onChanged: _saving
+                        ? null
+                        : (value) => setState(() => _product = value!),
+                  ),
+                  if (_product == 'new') ...[
+                    _field(
+                        key: 'completion-product-name',
+                        controller: _name,
+                        label: t('Finished product name', 'اسم المنتج الجاهز'),
+                        validator: _required),
+                    _field(
+                        key: 'completion-new-sku',
+                        controller: _sku,
+                        label: t('Unique SKU code', 'رمز صنف فريد'),
+                        validator: _required),
+                  ],
+                  _field(
+                      key: 'completion-quantity',
+                      controller: _quantity,
+                      label:
+                          '${t('Actual accepted output', 'الناتج الفعلي المقبول')} (${widget.order['unit']})',
+                      helper:
+                          '${t('Planned output', 'الناتج المخطط')}: ${widget.order['quantity']} ${widget.order['unit']}',
+                      validator: _quantityValidator,
+                      number: true),
+                  const SizedBox(height: 16),
+                  Text(
+                      t('Actual raw consumption',
+                          'استهلاك المواد الخام الفعلي'),
+                      style: Theme.of(context).textTheme.titleSmall),
+                  for (final e in _actual.entries)
+                    _field(
+                        key: 'completion-material-${e.key}',
+                        controller: e.value,
+                        label:
+                            '${widget.warehouse.materials.firstWhere((m) => m.id == e.key).name} (${widget.warehouse.materials.firstWhere((m) => m.id == e.key).unit})',
+                        validator: _quantityValidator,
+                        number: true),
+                  _field(
+                      key: 'completion-variance',
+                      controller: _variance,
+                      label: t('Variance explanation', 'تفسير اختلاف التنفيذ'),
+                      helper: t(
+                          'Required if actual output or consumption differs from the approved plan.',
+                          'مطلوب إذا اختلف الناتج أو الاستهلاك الفعلي عن الخطة المعتمدة.')),
+                  _field(
+                      key: 'completion-quality-note',
+                      controller: _quality,
+                      label: t('Quality record reference / note',
+                          'مرجع سجل الجودة / الملاحظة'),
+                      validator: _required),
+                  CheckboxListTile(
+                    key: const ValueKey('completion-quality-passed'),
+                    contentPadding: EdgeInsets.zero,
+                    value: _qualityPassed,
+                    onChanged: _saving
+                        ? null
+                        : (value) => setState(() => _qualityPassed = value!),
+                    title: Text(t(
+                        'Quality checks passed; output is ready for sale',
+                        'اجتاز الناتج فحوص الجودة وأصبح جاهزًا للبيع')),
+                  ),
+                  const Divider(height: 24),
+                  Text(t('Batch cost', 'تكلفة الدفعة'),
+                      style: Theme.of(context).textTheme.titleSmall),
+                  const SizedBox(height: 8),
+                  Text(t(
+                      'Record an explicit total cost, or leave it unknown. This does not change the selling price or post a financial cost journal.',
+                      'سجّل تكلفة إجمالية محددة أو اتركها غير معلومة. لا تتغير أسعار البيع ولا يُرحّل قيد تكلفة محاسبي.')),
+                  const SizedBox(height: 12),
+                  DropdownButtonFormField<String>(
+                    key: const ValueKey('completion-cost-status'),
+                    initialValue: _costStatus,
+                    isExpanded: true,
+                    decoration: InputDecoration(
+                        labelText: t('Cost status', 'حالة التكلفة')),
+                    items: [
+                      DropdownMenuItem(
+                          value: 'unknown',
+                          child: Text(t('Unknown', 'غير معلومة'))),
+                      DropdownMenuItem(
+                          value: 'estimated',
+                          child: Text(t('Estimated', 'تقديرية'))),
+                      DropdownMenuItem(
+                          value: 'confirmed',
+                          child: Text(t('Confirmed from reviewed records',
+                              'مؤكدة من سجلات مراجعة'))),
+                    ],
+                    onChanged: _saving
+                        ? null
+                        : (value) => setState(() => _costStatus = value!),
+                  ),
+                  if (_costStatus != 'unknown') ...[
+                    _field(
+                        key: 'completion-total-cost',
+                        controller: _cost,
+                        label: t('Total batch cost', 'تكلفة الدفعة الإجمالية'),
+                        number: true,
+                        validator: (value) {
+                          try {
+                            Money.parse(value ?? '');
+                            return null;
+                          } catch (_) {
+                            return t('Enter an amount with up to two decimals',
+                                'أدخل مبلغًا حتى منزلتين عشريتين');
+                          }
+                        }),
+                    const SizedBox(height: 12),
+                    DropdownButtonFormField<String>(
+                      key: const ValueKey('completion-cost-currency'),
+                      initialValue: _currency,
+                      isExpanded: true,
+                      decoration: InputDecoration(
+                          labelText: t('Cost currency', 'عملة التكلفة')),
+                      items: [
+                        for (final currency in Money.currencies)
+                          DropdownMenuItem(
+                              value: currency, child: Text(currency))
+                      ],
+                      onChanged: _saving
+                          ? null
+                          : (value) => setState(() => _currency = value!),
+                    ),
+                    _field(
+                        key: 'completion-cost-reference',
+                        controller: _costReference,
+                        label: t('Cost source reference', 'مرجع مصدر التكلفة'),
+                        validator:
+                            _costStatus == 'confirmed' ? _required : null),
+                  ],
+                  AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 180),
+                    child: _error == null
+                        ? const SizedBox.shrink()
+                        : Padding(
+                            key: ValueKey(_error),
+                            padding: const EdgeInsets.only(top: 12),
+                            child: Semantics(
+                                liveRegion: true,
+                                child: Text(_error!,
+                                    style: TextStyle(
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .error))),
+                          ),
+                  ),
+                  if (_saving)
+                    const Padding(
+                        padding: EdgeInsets.only(top: 12),
+                        child: LinearProgressIndicator()),
+                ],
+              ),
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(
+              onPressed: _saving ? null : () => Navigator.pop(context),
+              child: Text(t('Cancel', 'إلغاء'))),
+          FilledButton(
+            key: const ValueKey('completion-submit'),
+            onPressed: _saving ? null : _submit,
+            child: Text(_saving
+                ? t('Posting…', 'جارٍ التسجيل…')
+                : t('Complete & receive', 'إتمام واستلام')),
+          ),
+        ],
+      ),
+    );
   }
 }

@@ -1,9 +1,11 @@
 import '../models/trade_line.dart';
+import '../models/product.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/warehouse_provider.dart';
 import '../providers/shop_provider.dart';
 import '../services/money.dart';
+import '../services/inventory_units.dart';
 import 'parties_screen.dart';
 import '../services/record_id.dart';
 import '../widgets/storage_status.dart';
@@ -30,6 +32,7 @@ class _TradeEntryScreenState extends State<TradeEntryScreen> {
   String? _partyId;
   String _unit = 'Kilogram';
   String? _product;
+  String? _productId;
   String? _error;
   bool _posting = false;
   String t(String en, String ar) =>
@@ -38,6 +41,7 @@ class _TradeEntryScreenState extends State<TradeEntryScreen> {
         'Kilogram' => t('Kilogram', 'كيلوغرام'),
         'Gram' => t('Gram', 'غرام'),
         'Liter' => t('Liter', 'لتر'),
+        'Milliliter' => t('Milliliter', 'ملليلتر'),
         'Gallon' => t('Gallon', 'غالون'),
         'Piece' => t('Piece', 'قطعة'),
         _ => unit,
@@ -53,7 +57,49 @@ class _TradeEntryScreenState extends State<TradeEntryScreen> {
           .where((p) => p.name == _product);
       if (products.isNotEmpty) {
         _price.text = products.first.unitPrice.toStringAsFixed(2);
+        _productId = products.first.id;
+        _unit = products.first.unit;
       }
+    }
+  }
+
+  Product? _selectedProduct(ShopProvider shop) {
+    final matches = shop.products.where(
+        (p) => _productId != null ? p.id == _productId : p.name == _product);
+    return matches.isEmpty ? null : matches.single;
+  }
+
+  List<String> _saleUnits(Product product) {
+    final units = {
+      product.unit,
+      ...product.unitConversions.map((u) => u['unit'] as String)
+    };
+    for (final unit in [
+      'g',
+      'Gram',
+      'kg',
+      'Kilogram',
+      'ml',
+      'Milliliter',
+      'L',
+      'Liter'
+    ]) {
+      try {
+        InventoryUnits.toBase(1, unit, product.unit, product.unitConversions);
+        units.add(unit);
+      } catch (_) {/* Only defined conversions are offered. */}
+    }
+    return units.toList();
+  }
+
+  String _stockPreview(Product product, String unit, String entered) {
+    try {
+      final value = InventoryUnits.toBase(
+          Money.quantity(entered), unit, product.unit, product.unitConversions);
+      return '${t('Stock quantity issued', 'الكمية المصروفة من المخزون')}: ${value.toStringAsFixed(6).replaceFirst(RegExp(r'\.?0+$'), '')} ${product.unit}';
+    } catch (_) {
+      return t('Check quantity and the defined stock-unit conversion.',
+          'تحقق من الكمية وتحويل وحدة المخزون المعرّف.');
     }
   }
 
@@ -108,9 +154,14 @@ class _TradeEntryScreenState extends State<TradeEntryScreen> {
             reference: _reference.text,
             requestId: _requestId);
       } else {
+        final product = _selectedProduct(shop)!;
         await shop.sellProducts([
           TradeInput(
-              name: _product!, quantity: quantity, unitPriceMinor: price),
+              itemId: product.id,
+              name: product.name,
+              unit: _unit,
+              quantity: quantity,
+              unitPriceMinor: price),
           ..._extra
         ],
             customer: _party.text,
@@ -136,6 +187,7 @@ class _TradeEntryScreenState extends State<TradeEntryScreen> {
 
   Future<void> _addItem() async {
     String name = '', quantity = '', price = '', unit = 'Kilogram';
+    String? itemId;
     final form = GlobalKey<FormState>();
     final shop = context.read<ShopProvider>();
     final line = await showDialog<TradeInput>(
@@ -167,10 +219,18 @@ class _TradeEntryScreenState extends State<TradeEntryScreen> {
                                             validator: _required,
                                             items: shop.products
                                                 .map((p) => DropdownMenuItem(
-                                                    value: p.name,
+                                                    value: p.id,
                                                     child: Text(p.name)))
                                                 .toList(),
-                                            onChanged: (v) => name = v ?? ''),
+                                            onChanged: (v) => update(() {
+                                                  itemId = v;
+                                                  final product = shop.products
+                                                      .firstWhere(
+                                                          (p) => p.id == v);
+                                                  name = product.name;
+                                                  unit = product.unit;
+                                                  price = '';
+                                                })),
                                       if (widget.purchase)
                                         TextFormField(
                                             initialValue: unit,
@@ -179,31 +239,81 @@ class _TradeEntryScreenState extends State<TradeEntryScreen> {
                                                     'وحدة المخزون')),
                                             onChanged: (v) => unit = v,
                                             validator: _required),
+                                      if (!widget.purchase && itemId != null)
+                                        DropdownButtonFormField<String>(
+                                          key: ValueKey('$itemId:$unit'),
+                                          initialValue: unit,
+                                          isExpanded: true,
+                                          decoration: InputDecoration(
+                                              labelText:
+                                                  t('Sale unit', 'وحدة البيع')),
+                                          items: _saleUnits(shop.products
+                                                  .firstWhere(
+                                                      (p) => p.id == itemId))
+                                              .map((u) => DropdownMenuItem(
+                                                  value: u,
+                                                  child: Text(unitLabel(u))))
+                                              .toList(),
+                                          onChanged: (v) => update(() {
+                                            unit = v!;
+                                            price = '';
+                                          }),
+                                        ),
                                       TextFormField(
                                           decoration: InputDecoration(
                                               labelText:
                                                   t('Quantity', 'الكمية')),
                                           keyboardType: const TextInputType
                                               .numberWithOptions(decimal: true),
-                                          onChanged: (v) => quantity = v,
+                                          onChanged: (v) =>
+                                              update(() => quantity = v),
                                           validator: (v) {
                                             try {
                                               Money.quantity(v ?? '');
+                                              if (!widget.purchase &&
+                                                  itemId != null) {
+                                                final product = shop.products
+                                                    .firstWhere(
+                                                        (p) => p.id == itemId);
+                                                InventoryUnits.toBase(
+                                                    Money.quantity(v ?? ''),
+                                                    unit,
+                                                    product.unit,
+                                                    product.unitConversions);
+                                              }
                                               return null;
                                             } catch (_) {
-                                              return t(
-                                                  'Enter a positive quantity',
-                                                  'أدخل كمية موجبة');
+                                              return widget.purchase
+                                                  ? t('Enter a positive quantity',
+                                                      'أدخل كمية موجبة')
+                                                  : t('Use a positive quantity and valid unit conversion',
+                                                      'أدخل كمية موجبة وتحويلاً صحيحاً للوحدة');
                                             }
                                           }),
                                       TextFormField(
+                                          key: widget.purchase
+                                              ? null
+                                              : ValueKey(
+                                                  'extra-price:$itemId:$unit'),
+                                          initialValue: price,
                                           decoration: InputDecoration(
-                                              labelText: t(
-                                                  'Unit price', 'سعر الوحدة')),
+                                              labelText: widget.purchase
+                                                  ? t('Unit price',
+                                                      'سعر الوحدة')
+                                                  : t('Sale price per entered unit',
+                                                      'سعر البيع لكل وحدة إدخال')),
                                           keyboardType: const TextInputType
                                               .numberWithOptions(decimal: true),
                                           onChanged: (v) => price = v,
-                                          validator: _amount)
+                                          validator: _amount),
+                                      if (!widget.purchase &&
+                                          itemId != null &&
+                                          quantity.isNotEmpty)
+                                        Text(_stockPreview(
+                                            shop.products.firstWhere(
+                                                (p) => p.id == itemId),
+                                            unit,
+                                            quantity)),
                                     ])))),
                     actions: [
                       TextButton(
@@ -215,6 +325,7 @@ class _TradeEntryScreenState extends State<TradeEntryScreen> {
                               Navigator.pop(
                                   ctx,
                                   TradeInput(
+                                      itemId: itemId,
                                       name: name.trim(),
                                       unit: unit.trim(),
                                       quantity: Money.quantity(quantity),
@@ -229,8 +340,18 @@ class _TradeEntryScreenState extends State<TradeEntryScreen> {
   Widget _field(TextEditingController controller, String label,
           {bool amount = false}) =>
       Padding(
+          key: ValueKey(controller == _party
+              ? 'field-trade-party'
+              : controller == _price
+                  ? 'field-trade-price'
+                  : 'field-trade-paid'),
           padding: const EdgeInsets.only(bottom: 16),
           child: TextFormField(
+              key: ValueKey(controller == _party
+                  ? 'trade-party'
+                  : controller == _price
+                      ? 'trade-price'
+                      : 'trade-paid'),
               controller: controller,
               enabled: !_posting,
               decoration: InputDecoration(labelText: label),
@@ -246,14 +367,22 @@ class _TradeEntryScreenState extends State<TradeEntryScreen> {
   Widget build(BuildContext context) {
     final warehouse = context.watch<WarehouseProvider>();
     final shop = context.watch<ShopProvider>();
+    final selectedProduct = _selectedProduct(shop);
+    final rawMatches =
+        warehouse.materials.where((m) => m.name == _item.text.trim()).toList();
+    final selectedRaw = rawMatches.isEmpty ? null : rawMatches.single;
     final loaded = widget.purchase ? warehouse.isLoaded : shop.isLoaded;
     final units = [
       'Kilogram',
       'Gram',
       'Liter',
+      'Milliliter',
       'Gallon',
       'Piece',
-      ...warehouse.materials.map((m) => m.unit)
+      ...warehouse.materials.map((m) => m.unit),
+      if (selectedRaw != null)
+        ...selectedRaw.unitConversions.map((u) => u['unit'] as String),
+      _unit,
     ].where((u) => u.isNotEmpty).toSet().toList();
     return PopScope(
         canPop: !_posting,
@@ -344,6 +473,8 @@ class _TradeEntryScreenState extends State<TradeEntryScreen> {
                                             matching.first.unit.isNotEmpty) {
                                           setState(() =>
                                               _unit = matching.first.unit);
+                                        } else {
+                                          setState(() {});
                                         }
                                       }),
                                   const SizedBox(height: 16),
@@ -352,8 +483,9 @@ class _TradeEntryScreenState extends State<TradeEntryScreen> {
                                       initialValue: _unit,
                                       isExpanded: true,
                                       decoration: InputDecoration(
-                                          labelText:
-                                              t('Stock unit', 'وحدة المخزون')),
+                                          labelText: t(
+                                              'Purchase / invoice unit',
+                                              'وحدة الشراء / الفاتورة')),
                                       items: units
                                           .map((u) => DropdownMenuItem(
                                               value: u,
@@ -364,34 +496,59 @@ class _TradeEntryScreenState extends State<TradeEntryScreen> {
                                           : (u) => setState(() => _unit = u!)),
                                 ] else ...[
                                   DropdownButtonFormField<String>(
-                                      initialValue: _product,
+                                      key: const ValueKey('sale-product'),
+                                      initialValue: selectedProduct?.id,
                                       isExpanded: true,
                                       validator: _required,
                                       decoration: InputDecoration(
                                           labelText: t('Product', 'المنتج')),
                                       items: shop.products
                                           .map((p) => DropdownMenuItem(
-                                              value: p.name,
-                                              child: Text(p.name)))
+                                              value: p.id, child: Text(p.name)))
                                           .toList(),
                                       onChanged: _posting
                                           ? null
-                                          : (name) => setState(() {
-                                                _product = name;
-                                                _price.text = shop.products
+                                          : (id) => setState(() {
+                                                final product = shop.products
                                                     .firstWhere(
-                                                        (p) => p.name == name)
-                                                    .unitPrice
+                                                        (p) => p.id == id);
+                                                _productId = id;
+                                                _product = product.name;
+                                                _unit = product.unit;
+                                                _price.text = product.unitPrice
                                                     .toStringAsFixed(2);
                                               })),
-                                  if (_product != null)
+                                  if (selectedProduct != null) ...[
                                     Padding(
                                         padding: const EdgeInsets.only(top: 8),
                                         child: Text(
-                                            '${t('Available', 'المتاح')}: ${shop.getStock(_product!)} ${shop.products.firstWhere((p) => p.name == _product).unit}')),
+                                            '${t('Stock balance', 'رصيد المخزون')}: ${selectedProduct.quantity} ${selectedProduct.unit} • ${selectedProduct.sku}')),
+                                    const SizedBox(height: 12),
+                                    DropdownButtonFormField<String>(
+                                      key: ValueKey(
+                                          'sale-unit:${selectedProduct.id}:$_unit'),
+                                      initialValue: _unit,
+                                      isExpanded: true,
+                                      decoration: InputDecoration(
+                                          labelText:
+                                              t('Sale unit', 'وحدة البيع')),
+                                      items: _saleUnits(selectedProduct)
+                                          .map((u) => DropdownMenuItem(
+                                              value: u,
+                                              child: Text(unitLabel(u))))
+                                          .toList(),
+                                      onChanged: _posting
+                                          ? null
+                                          : (u) => setState(() {
+                                                _unit = u!;
+                                                _price.clear();
+                                              }),
+                                    ),
+                                  ],
                                 ],
                                 const SizedBox(height: 16),
                                 TextFormField(
+                                    key: const ValueKey('trade-quantity'),
                                     controller: _quantity,
                                     enabled: !_posting,
                                     keyboardType:
@@ -404,6 +561,22 @@ class _TradeEntryScreenState extends State<TradeEntryScreen> {
                                       try {
                                         Money.total(
                                             Money.quantity(value ?? ''), 0);
+                                        if (!widget.purchase &&
+                                            selectedProduct != null) {
+                                          InventoryUnits.toBase(
+                                              Money.quantity(value ?? ''),
+                                              _unit,
+                                              selectedProduct.unit,
+                                              selectedProduct.unitConversions);
+                                        }
+                                        if (widget.purchase &&
+                                            selectedRaw != null) {
+                                          InventoryUnits.toBase(
+                                              Money.quantity(value ?? ''),
+                                              _unit,
+                                              selectedRaw.unit,
+                                              selectedRaw.unitConversions);
+                                        }
                                         return null;
                                       } catch (_) {
                                         return t(
@@ -411,8 +584,38 @@ class _TradeEntryScreenState extends State<TradeEntryScreen> {
                                             'أدخل كمية موجبة (حتى ٦ منازل عشرية)');
                                       }
                                     }),
+                                if (!widget.purchase &&
+                                    selectedProduct != null &&
+                                    _quantity.text.isNotEmpty)
+                                  Padding(
+                                      key: const ValueKey('sale-stock-preview'),
+                                      padding: const EdgeInsets.only(top: 8),
+                                      child: Text(_stockPreview(selectedProduct,
+                                          _unit, _quantity.text))),
+                                if (widget.purchase &&
+                                    selectedRaw != null &&
+                                    _quantity.text.isNotEmpty)
+                                  Padding(
+                                      key: const ValueKey('raw-stock-preview'),
+                                      padding: const EdgeInsets.only(top: 8),
+                                      child: Builder(builder: (_) {
+                                        try {
+                                          final base = InventoryUnits.toBase(
+                                              Money.quantity(_quantity.text),
+                                              _unit,
+                                              selectedRaw.unit,
+                                              selectedRaw.unitConversions);
+                                          return Text(
+                                              '${t('Stock quantity received', 'الكمية المستلمة بالمخزون')}: ${base.toStringAsFixed(6).replaceFirst(RegExp(r'\.?0+$'), '')} ${selectedRaw.unit}');
+                                        } catch (_) {
+                                          return Text(t(
+                                              'Check quantity and the defined stock-unit conversion.',
+                                              'تحقق من الكمية وتحويل وحدة المخزون المعرّف.'));
+                                        }
+                                      })),
                                 const SizedBox(height: 16),
                                 DropdownButtonFormField<String>(
+                                    key: const ValueKey('trade-currency'),
                                     initialValue: _currency,
                                     validator: _required,
                                     isExpanded: true,
@@ -426,13 +629,18 @@ class _TradeEntryScreenState extends State<TradeEntryScreen> {
                                         ? null
                                         : (c) => setState(() => _currency = c)),
                                 const SizedBox(height: 16),
-                                _field(_price, t('Unit price', 'سعر الوحدة'),
+                                _field(
+                                    _price,
+                                    widget.purchase
+                                        ? t('Unit price', 'سعر الوحدة')
+                                        : t('Sale price per entered unit',
+                                            'سعر البيع لكل وحدة إدخال'),
                                     amount: true),
                                 for (final line in _extra)
                                   ListTile(
                                       title: Text(line.name),
                                       subtitle: Text(
-                                          '${line.quantity} • ${Money.format(Money.total(line.quantity, line.unitPriceMinor))}'),
+                                          '${line.quantity} ${line.unit} • ${Money.format(Money.total(line.quantity, line.unitPriceMinor))}'),
                                       trailing: IconButton(
                                           icon: const Icon(Icons.close),
                                           onPressed: _posting
@@ -452,6 +660,7 @@ class _TradeEntryScreenState extends State<TradeEntryScreen> {
                                             'المبلغ المقبوض'),
                                     amount: true),
                                 TextFormField(
+                                    key: const ValueKey('trade-reference'),
                                     controller: _reference,
                                     enabled: !_posting,
                                     decoration: InputDecoration(

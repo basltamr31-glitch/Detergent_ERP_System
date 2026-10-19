@@ -6,9 +6,13 @@ import '../l10n/app_localizations.dart';
 import '../providers/warehouse_provider.dart';
 import '../models/manufactured_product.dart';
 import 'package:intl/intl.dart';
+import 'raw_material_details_screen.dart';
 
 class WarehouseScreen extends StatelessWidget {
   const WarehouseScreen({super.key});
+
+  String t(BuildContext context, String en, String ar) =>
+      Localizations.localeOf(context).languageCode == 'ar' ? ar : en;
 
   String _translateUnit(String unitKey, AppLocalizations loc) {
     if (unitKey.isEmpty) return '';
@@ -35,7 +39,8 @@ class WarehouseScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(localizations.warehouseTitle),
+        title: Text(t(context, 'Raw-material warehouse', 'مستودع المواد الخام'),
+            maxLines: 2),
         backgroundColor: Colors.orange,
         foregroundColor: Colors.white,
         actions: [
@@ -99,16 +104,31 @@ class WarehouseScreen extends StatelessWidget {
                                         fontSize: 18)),
                                 const SizedBox(height: 4),
                                 Text(
-                                    '${localizations.availableQuantity}: ${item.quantity.toStringAsFixed(2)} ${_translateUnit(item.unit, localizations)}'),
+                                    '${t(context, 'Raw SKU', 'رمز المادة الخام')}: ${item.sku}'),
+                                Text(
+                                    '${localizations.availableQuantity}: ${item.quantity.toStringAsFixed(6).replaceFirst(RegExp(r'\.?0+$'), '')} ${_translateUnit(item.unit, localizations)}'),
                                 const SizedBox(height: 4),
                                 Text(
-                                    '${localizations.unitPriceLabel}: ${item.unitPrice.toStringAsFixed(2)} ${item.priceCurrency}'),
+                                    '${t(context, 'Last purchase / reference price', 'آخر سعر شراء / سعر مرجعي')}: ${item.unitPrice.toStringAsFixed(2)} ${item.priceCurrency}'),
                                 const SizedBox(height: 4),
                                 Text(
-                                    '${localizations.totalPriceLabel}: ${item.totalPrice.toStringAsFixed(2)} ${item.priceCurrency}',
+                                    '${t(context, 'Quantity × reference price (estimate)', 'الكمية × السعر المرجعي (تقدير)')}: ${item.totalPrice.toStringAsFixed(2)} ${item.priceCurrency}',
                                     style: const TextStyle(
                                         color: Colors.orange,
                                         fontWeight: FontWeight.bold)),
+                                TextButton.icon(
+                                    key: ValueKey('raw-details-${item.id}'),
+                                    onPressed: () => Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (_) =>
+                                                RawMaterialDetailsScreen(
+                                                    materialId: item.id))),
+                                    icon: const Icon(Icons.tune),
+                                    label: Text(t(
+                                        context,
+                                        'SKU, units & movements',
+                                        'الصنف والوحدات والحركات'))),
                               ],
                             )),
                             IconButton(
@@ -737,8 +757,8 @@ class WarehouseScreen extends StatelessWidget {
 
                         return ListTile(
                           title: Text(t.materialName),
-                          subtitle: Text("${DateFormat('yyyy-MM-dd HH:mm')
-                                  .format(t.date)} (${t.type == 'RESTORE' ? 'RESTORE' : t.type})"),
+                          subtitle: Text(
+                              "${DateFormat('yyyy-MM-dd HH:mm').format(t.date)} (${t.type == 'RESTORE' ? 'RESTORE' : t.type})"),
                           trailing: Text(
                             '$sig${t.quantity.toStringAsFixed(1)}',
                             style: TextStyle(

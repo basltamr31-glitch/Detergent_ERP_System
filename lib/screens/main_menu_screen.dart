@@ -20,6 +20,7 @@ import 'parties_screen.dart';
 import 'transfers_screen.dart';
 import 'finance_screen.dart';
 import 'operations_screen.dart';
+import 'trading_purchase_screen.dart';
 
 class MainMenuScreen extends StatefulWidget {
   const MainMenuScreen({super.key});
@@ -274,12 +275,21 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
                   tiles([
                     module(
                         'warehouse',
-                        t('Warehouse', 'المستودع'),
+                        t('Raw-material warehouse', 'مستودع المواد الخام'),
                         t('Raw stock and supplier receipts',
                             'المواد الخام واستلام المشتريات'),
                         Icons.warehouse_outlined,
                         Colors.orange,
                         const WarehouseScreen()),
+                    if (AccessControl.allows('warehouse'))
+                      module(
+                          'trading-purchase',
+                          t('Trading purchases', 'المشتريات التجارية'),
+                          t('Receive supplier products directly into finished stock',
+                              'استلام منتجات الموردين مباشرة في مخزون المنتجات الجاهزة'),
+                          Icons.local_shipping_outlined,
+                          Colors.green,
+                          const TradingPurchaseScreen()),
                     module(
                         'operations',
                         t('Production & stock counts', 'الإنتاج والجرد'),
@@ -298,9 +308,10 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
                         const TransfersScreen()),
                     module(
                         'sales',
-                        t('Sales shop', 'المبيعات'),
-                        t('Sell products and track customers',
-                            'بيع المنتجات ومتابعة العملاء'),
+                        t('Finished goods & trading',
+                            'المنتجات الجاهزة والتجارة'),
+                        t('One stock balance with separate receipt sources',
+                            'رصيد موحد مع تتبع مصادر الاستلام'),
                         Icons.storefront_outlined,
                         Colors.green,
                         const ShopScreen()),

@@ -36,7 +36,8 @@ class _TransfersScreenState extends State<TransfersScreen> {
   Future<void> _entry() async {
     final warehouse = context.read<WarehouseProvider>(),
         shop = context.read<ShopProvider>();
-    String? batch, currency;
+    String? batch, currency, productId, costCurrency;
+    String totalCost = '', costStatus = 'estimated', costReference = '';
     String source = '',
         sourceUnit = '',
         name = '',
@@ -49,7 +50,9 @@ class _TransfersScreenState extends State<TransfersScreen> {
     String? required(String? v) =>
         v == null || v.trim().isEmpty ? t('Required', 'مطلوب') : null;
     Widget field(String label, void Function(String) change,
-            {bool money = false, bool quantity = false}) =>
+            {bool money = false,
+            bool quantity = false,
+            bool optional = false}) =>
         Padding(
             padding: const EdgeInsets.only(top: 12),
             child: TextFormField(
@@ -61,6 +64,7 @@ class _TransfersScreenState extends State<TransfersScreen> {
                     : TextInputType.text,
                 validator: (v) {
                   try {
+                    if (optional && (v == null || v.trim().isEmpty)) { return null; }
                     if (money) {
                       Money.parse(v ?? '');
                     } else if (quantity) {
@@ -107,6 +111,41 @@ class _TransfersScreenState extends State<TransfersScreen> {
                                               .toList(),
                                           onChanged:
                                               saving ? null : (v) => batch = v),
+                                      DropdownButtonFormField<String>(
+                                          initialValue: '',
+                                          isExpanded: true,
+                                          decoration: InputDecoration(
+                                              labelText: t(
+                                                  'Finished product SKU',
+                                                  'صنف المنتج الجاهز')),
+                                          items: [
+                                            DropdownMenuItem(
+                                                value: '',
+                                                child: Text(t(
+                                                    'New product / legacy entry',
+                                                    'منتج جديد / إدخال سابق'))),
+                                            ...shop.products.map((p) =>
+                                                DropdownMenuItem(
+                                                    value: p.id,
+                                                    child: Text(
+                                                        '${p.sku} • ${p.name}')))
+                                          ],
+                                          onChanged: saving
+                                              ? null
+                                              : (id) => update(() {
+                                                    productId =
+                                                        id == '' ? null : id;
+                                                    if (productId != null) {
+                                                      final p = shop.products
+                                                          .firstWhere((p) =>
+                                                              p.id ==
+                                                              productId);
+                                                      name = p.name;
+                                                      unit = p.unit;
+                                                    }
+                                                  })),
+                                      if (productId != null)
+                                        Text('$name • $unit'),
                                       field(
                                           t('Manufactured quantity to use',
                                               'كمية الإنتاج المستخدمة'),
@@ -116,19 +155,21 @@ class _TransfersScreenState extends State<TransfersScreen> {
                                           t('Unit used when recording production',
                                               'وحدة كمية الإنتاج المسجلة'),
                                           (v) => sourceUnit = v),
-                                      field(
-                                          t('Shop product name',
-                                              'اسم منتج المتجر'),
-                                          (v) => name = v),
+                                      if (productId == null)
+                                        field(
+                                            t('Shop product name',
+                                                'اسم منتج المتجر'),
+                                            (v) => name = v),
                                       field(
                                           t('Packaged quantity received by shop',
                                               'الكمية المعبأة المستلمة بالمتجر'),
                                           (v) => qty = v,
                                           quantity: true),
-                                      field(
-                                          t('Shop stock unit',
-                                              'وحدة مخزون المتجر'),
-                                          (v) => unit = v),
+                                      if (productId == null)
+                                        field(
+                                            t('Shop stock unit',
+                                                'وحدة مخزون المتجر'),
+                                            (v) => unit = v),
                                       field(
                                           t('Reference unit price',
                                               'سعر الوحدة المرجعي'),
@@ -147,6 +188,63 @@ class _TransfersScreenState extends State<TransfersScreen> {
                                           onChanged: saving
                                               ? null
                                               : (v) => currency = v),
+                                      ExpansionTile(
+                                          title: Text(t(
+                                              'Optional production cost snapshot',
+                                              'لقطة تكلفة إنتاج اختيارية')),
+                                          children: [
+                                            field(
+                                                t('Total lot cost (optional)',
+                                                    'إجمالي تكلفة الدفعة (اختياري)'),
+                                                (v) => totalCost = v,
+                                                money: true,
+                                                optional: true),
+                                            DropdownButtonFormField<String>(
+                                                isExpanded: true,
+                                                initialValue: costStatus,
+                                                decoration: InputDecoration(
+                                                    labelText: t('Cost status',
+                                                        'حالة التكلفة')),
+                                                items: [
+                                                  DropdownMenuItem(
+                                                      value: 'estimated',
+                                                      child: Text(t('Estimated',
+                                                          'تقديرية'))),
+                                                  DropdownMenuItem(
+                                                      value: 'confirmed',
+                                                      child: Text(t(
+                                                          'Confirmed with reference',
+                                                          'مؤكدة بمرجع')))
+                                                ],
+                                                onChanged: saving
+                                                    ? null
+                                                    : (v) => costStatus = v!),
+                                            DropdownButtonFormField<String>(
+                                                isExpanded: true,
+                                                decoration: InputDecoration(
+                                                    labelText: t(
+                                                        'Cost currency',
+                                                        'عملة التكلفة')),
+                                                items: Money.currencies
+                                                    .map((c) =>
+                                                        DropdownMenuItem(
+                                                            value: c,
+                                                            child: Text(c)))
+                                                    .toList(),
+                                                validator: (_) => totalCost
+                                                        .trim()
+                                                        .isEmpty
+                                                    ? null
+                                                    : required(costCurrency),
+                                                onChanged: saving
+                                                    ? null
+                                                    : (v) => costCurrency = v),
+                                            field(
+                                                t('Reviewed cost reference',
+                                                    'مرجع مراجعة التكلفة'),
+                                                (v) => costReference = v,
+                                                optional: true),
+                                          ]),
                                       const SizedBox(height: 12),
                                       Text(t(
                                           'Enter the actual manufacturing and packaged quantities. Confirm the conversion, including density and packaging loss, from your batch records.',
@@ -178,7 +276,18 @@ class _TransfersScreenState extends State<TransfersScreen> {
                                         unit: unit,
                                         unitPriceMinor: Money.parse(price),
                                         currency: currency!,
-                                        requestId: token);
+                                        requestId: token,
+                                        productId: productId,
+                                        costMinor: totalCost.trim().isEmpty
+                                            ? null
+                                            : Money.parse(totalCost),
+                                        costCurrency: totalCost.trim().isEmpty
+                                            ? null
+                                            : costCurrency,
+                                        costStatus: totalCost.trim().isEmpty
+                                            ? 'unknown'
+                                            : costStatus,
+                                        costReference: costReference);
                                     if (ctx.mounted) Navigator.pop(ctx);
                                   } catch (e) {
                                     if (ctx.mounted) {

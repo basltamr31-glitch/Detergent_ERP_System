@@ -254,11 +254,12 @@ void main() {
                           child: const Text('Open')))))));
       await tester.tap(find.text('Open'));
       await tester.pumpAndSettle();
-      final fields = find.byType(TextFormField);
-      await tester.enterText(fields.at(0), 'Customer A');
-      await tester.enterText(fields.at(1), language == 'ar' ? '٢٫٥' : '2.5');
-      await tester.enterText(fields.at(2), '3.25');
-      await tester.enterText(fields.at(3), '5');
+      await tester.enterText(
+          find.byKey(const ValueKey('trade-party')), 'Customer A');
+      await tester.enterText(find.byKey(const ValueKey('trade-quantity')),
+          language == 'ar' ? '٢٫٥' : '2.5');
+      await tester.enterText(find.byKey(const ValueKey('trade-price')), '3.25');
+      await tester.enterText(find.byKey(const ValueKey('trade-paid')), '5');
       final currency = find.byType(DropdownButtonFormField<String>).last;
       await tester.ensureVisible(currency);
       await tester.tap(currency);
