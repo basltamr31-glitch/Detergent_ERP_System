@@ -1,5 +1,13 @@
 # ERP development phases
 
+## Acceptance phase — full implemented-workflow sign-off (20 October 2026)
+
+Expands the manual catalog from125 to133 checks with active-ingredient percentages, Arabic decimals, draft-row deletion, duplicate SKU protection, exact decimal settlement, form cancellation, restore/account separation and multipage Arabic PDFs. Seven ordered walkthroughs specify safe test setup, purchase-to-cash figures, mixed-source manufacturing/trading FIFO, cost-estimate arithmetic, permissions, rejections/corrections and backup/device acceptance. Every catalog case maps to a phase and module/screens.
+
+The self-contained full acceptance HTML records manual observations separately from the existing132-test source snapshot. Its readiness calculation uses an explicit platform/build, requires core cases and actual checkpoint references, and keeps failures/blocked/pending cases visible regardless of filters. N/A needs a reason and remains a scope exclusion requiring review. A downloadable HTML approval report includes all observations, outstanding items and features outside the current build, with a human sign-off line. Imported readiness claims are ignored; old125-case exports leave new cases pending. Unchanged evidence logs retain their original snapshot time.
+
+Playwright verification passed for catalog/coverage rendering, seven walkthroughs, platform/build scope, core/evidence/N/A rules, all incomplete statuses, persistence, phase/platform filters, JSON/CSV import/export, safely escaped report notes and390-pixel layout. All UI-test observations were synthetic in a disposable context and discarded. ERP application source/binaries remain unchanged; no live database was opened and no manual acceptance case was marked passed for the user.
+
 ## Windows access phase — separate trial workspace 1.1.1 (20 October 2026)
 
 The reported screenshot shows a running app rejecting a local username/password. Adds explicit trial access through START-TEST.cmd or the regular Windows login's Open test workspace button. The trial workspace provisions an owner-level tester account once, uses normal salted password verification, preserves its own records and displays a persistent TEST banner. It has an independent local-support data directory and native mutex; business data/accounts are not reset or copied. Changed test passwords remain changed.

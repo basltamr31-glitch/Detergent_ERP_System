@@ -213,12 +213,13 @@
     {
       "id": "TC-019",
       "category": "Authentication and roles",
-      "title": "Viewer writes rejected",
+      "title": "Viewer posting limits and shared estimates",
       "steps": [
         "Sign in as viewer",
-        "Attempt a stock posting, sale, financial journal and restore"
+        "Attempt a stock posting, sale, financial journal and restore",
+        "Open Production costing as viewer and inspect draft editing separately from posted stock/finance. Current estimate drafts are shared locally and their fields are not gated by posting permissions; record this limitation rather than assuming fully read-only access."
       ],
-      "expected": "All prohibited mutations are rejected; data and audit history remain unchanged.",
+      "expected": "All prohibited mutations are rejected; data and audit history remain unchanged. Costing estimate drafts currently remain editable by signed-in roles, including viewer; this limitation is listed in remaining scope and does not authorize posting stock or journals.",
       "platform": "Both"
     },
     {
@@ -1080,6 +1081,7 @@
       "category": "Documents, printing and backup",
       "title": "Interrupted recovery",
       "steps": [
+        "Advanced controlled recovery check: use a disposable copied test environment with a verified backup and developer assistance. If this cannot be exercised, mark Blocked rather than guessing Pass. Never interrupt or edit the live business database.",
         "On a trial device interrupt a restore/paired transfer then reopen",
         "Follow recovery guidance"
       ],
@@ -1261,6 +1263,7 @@
       "category": "Warehouses 1.1 acceptance",
       "title": "Upgrade and paired-write recovery",
       "steps": [
+        "Advanced controlled recovery check: use a disposable copied test environment with a verified backup and developer assistance. If this cannot be exercised, mark Blocked rather than guessing Pass. Never interrupt or edit the live business database.",
         "On disposable trial copies interrupt migration or a coordinated trading/production posting and restart. Preserve backups and files."
       ],
       "expected": "Pending recovery finishes both snapshots once before posting resumes. Inconsistent candidates fail before overwriting original data.",
@@ -1348,6 +1351,100 @@
       ],
       "expected": "Both manual credentials and the one-click shortcut reach the ERP. Original business accounts cannot be reset through the shortcut; account locks/password changes still apply.",
       "platform": "Windows"
+    },
+    {
+      "id": "TC-126",
+      "category": "Costing and packaging",
+      "title": "Active-ingredient percentage",
+      "steps": [
+        "In the separate costing draft set output 10 kg and one ingredient 2 kg",
+        "Mark that ingredient active, then clear the active flag"
+      ],
+      "expected": "Report shows 20% active ingredients when selected and 0% when cleared; inventory and posted journals do not change.",
+      "platform": "Both"
+    },
+    {
+      "id": "TC-127",
+      "category": "Costing and packaging",
+      "title": "Arabic decimal keyboard input",
+      "steps": [
+        "In a costing numeric field type 12.5 using the physical keyboard",
+        "Replace it with Arabic digits ١٢٫٥",
+        "Delete a digit, retype it and navigate away/back"
+      ],
+      "expected": "Both inputs represent 12.5. No duplicated digits, unintended reset or invalid saved amount. Repeat with the optional Android keypad if available.",
+      "platform": "Both"
+    },
+    {
+      "id": "TC-128",
+      "category": "Costing and packaging",
+      "title": "Costing row add and remove",
+      "steps": [
+        "In a separate estimate use 10 kg output and one ingredient 2 kg at USD 10/kg; labor/overhead zero",
+        "Add another named row 1 kg at USD 5/kg",
+        "Remove only the second row, then reopen the workspace"
+      ],
+      "expected": "Total estimate changes USD 20 → 25 → 20. First row stays intact and removed row does not return after restart.",
+      "platform": "Both"
+    },
+    {
+      "id": "TC-129",
+      "category": "Warehouses 1.1 acceptance",
+      "title": "SKU collision rejected",
+      "steps": [
+        "Register two separate zero-stock finished products with different SKUs",
+        "Attempt to change the second SKU to the first SKU",
+        "Cancel/reopen both item details"
+      ],
+      "expected": "Duplicate SKU is rejected; products, original identifiers, quantities and histories remain separate.",
+      "platform": "Both"
+    },
+    {
+      "id": "TC-130",
+      "category": "Purchases and raw inventory",
+      "title": "Exact decimal money and settlement",
+      "steps": [
+        "Using a separate sample raw material, receive 3 kg at USD 0.10/kg with USD 0.10 paid",
+        "Inspect the invoice and pay the remaining USD 0.20 once"
+      ],
+      "expected": "Total is USD 0.30, initial payable USD 0.20 and final payable zero. Stock is 3 kg; no floating-point residual or duplicate payment.",
+      "platform": "Both"
+    },
+    {
+      "id": "TC-131",
+      "category": "Dashboard and navigation",
+      "title": "Cancel dialogs without posting",
+      "steps": [
+        "Record current sample stock, document count and balances",
+        "Open a raw purchase, trading purchase, sale and production-plan form separately; enter sample values then Cancel before saving",
+        "Reopen each form and inspect saved records"
+      ],
+      "expected": "No posting, stock movement, payment or production order is created by cancellation. Existing saved records remain unchanged.",
+      "platform": "Both"
+    },
+    {
+      "id": "TC-132",
+      "category": "Documents, printing and backup",
+      "title": "Restore leaves local users unchanged",
+      "steps": [
+        "Inside TEST create a sample viewer account and make a business backup",
+        "Create another sample local viewer account after the backup",
+        "Restore the earlier business backup inside TEST, sign out and sign in with both viewer accounts"
+      ],
+      "expected": "Both local accounts still exist; business restore replaces business state only and neither restores nor resets local passwords. Finish by signing back in as tester.",
+      "platform": "Both"
+    },
+    {
+      "id": "TC-133",
+      "category": "Documents, printing and backup",
+      "title": "Long Arabic names and multipage PDF",
+      "steps": [
+        "Create a separate sample purchase with at least 12 named lines, including a long Arabic name",
+        "Generate its document PDF in Arabic and English",
+        "Inspect all pages and optionally print to your real printer"
+      ],
+      "expected": "All invoice lines and totals are readable, Arabic joins/RTL are usable, amounts are not clipped and page breaks do not omit or duplicate a line.",
+      "platform": "Both"
     }
   ]
 }

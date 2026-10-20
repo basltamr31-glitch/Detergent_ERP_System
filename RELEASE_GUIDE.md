@@ -1,5 +1,11 @@
 # ERP release guide
 
+## Full acceptance file for Windows1.1.1 / ChromeOS1.1.0
+
+ERP_Full_Acceptance_1.1.1.html is a separate, self-contained acceptance artifact:133 manual cases, seven ordered examples, expected cash/stock/costing tables, permission matrix, screen/module coverage and an exportable sign-off report. Start in the TEST workspace and follow the phases before running independent returns/rejection cases. Record actual checkpoint figures and export JSON after each session. Earlier1.1.1 results imports preserve existing observations and leave the eight new cases pending.
+
+Select the platform being approved and its exact installed build. Filters do not affect readiness. All applicable cases must pass; pending/fail/blocked/core exclusions or missing required evidence prevent readiness. Justified N/A remains a scope-review exception. Controlled interruption/legacy migration checks need disposable copied stores and assistance; if unavailable record Blocked. The existing132-test automated snapshot stays separate from user observations and is not proof of native device/printer acceptance. Remaining tax/valuation/COGS/WIP/partial-return/synchronization/distribution work is explicitly listed. The original Windows ZIP retains its earlier125-case file; no application rebuild is needed for this expanded test artifact.
+
 ## Windows 1.1.1 test login (20 October 2026)
 
 Extract the full Windows ZIP and open **START-TEST.cmd**, then click **Enter test app / دخول التطبيق التجريبي**. The temporary credentials are username `tester`, password `Tester@2026!Demo`. Read WINDOWS_TEST_LOGIN.md. The explicit `--demo` profile stores its own account and business boxes under the local application support directory's `test-profile-v1` subdirectory, with a separate native instance guard and a persistent amber TEST banner. It starts with empty business records and preserves trial work across restarts.

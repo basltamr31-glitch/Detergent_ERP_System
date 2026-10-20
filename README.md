@@ -25,7 +25,9 @@ Windows business access: launch `detergent_factory.exe` directly with its DLLs a
 
 ChromeOS: install the Android test APK through a permitted ADB setup. It includes ARM32, ARM64 and x86_64 libraries, optional touchscreen support and a resizable window. Physical keyboard numeric entry works at narrow widths with an optional touch keypad. The APK is debug-signed and has not been published to Google Play. Follow [Chromebook installation and test instructions](CHROMEBOOK_GUIDE.md); Play Store availability alone does not install a downloaded APK.
 
-Open `ERP_Test_Pack_1.1.1.html` locally for **125 manual acceptance cases** and the full inventory of **132 passing automated tests**. Filter by platform/category, record status/notes and export JSON or CSV results. Record the actual installed build, including 1.1.0+8 for the existing Chromebook APK. Physical Windows/Chromebook and printer acceptance remain pending. This HTML is a checklist for testing the installed ERP.
+Open **ERP_Full_Acceptance_1.1.1.html** for **133 manual acceptance cases**, seven ordered walkthroughs with exact stock/money/costing checkpoints, the role matrix, module coverage and an exportable approval report. It includes the captured inventory of **132 passing automated tests**, separately from your manual observations. Failed, blocked, pending, unexplained N/A or missing core evidence prevent a Ready recommendation. Justified exclusions require scope review. Record the actual installed build, including 1.1.0+8 for the existing Chromebook APK. Physical Windows/Chromebook and printer acceptance remain pending.
+
+The original Windows 1.1.1 ZIP retains its earlier 125-case checklist; the expanded full acceptance HTML is a separate, self-contained file and needs no app rebuild. Import earlier 1.1.1 results JSON to preserve observations; the eight new cases remain pending. Filter by phase/platform/category, record actual results and export JSON after each session. The file records user observations and cannot inspect or automatically approve the ERP database.
 
 Generated APK/ZIP/HTML files live under ignored `artifacts/` in the build workspace. Source catalogs and scripts are tracked under `qa/` and `scripts/`; binaries are not repository downloads. Review the [release guide](RELEASE_GUIDE.md) before installation/upgrades. See [development phases](DEVELOPMENT_PHASES.md) for verification history.
 
@@ -55,7 +57,9 @@ flutter test --no-pub --machine > build/current_tests.jsonl
 python scripts/generate-test-pack.py
 ```
 
-The generator consumes completed Flutter machine output, validates the manual catalog and embeds the actual automated outcomes and analyzer status. It records log hashes and snapshot time in `qa/automated_inventory.json` and the HTML. The latest suite contains 128 tests with clean static analysis; mocks/temporary stores do not replace physical-device testing.
+The generator consumes completed Flutter machine output, validates the manual catalog and walkthrough coverage, and embeds the actual automated outcomes and analyzer status. It records log hashes and snapshot time in `qa/automated_inventory.json` and the HTML; unchanged source logs keep the original capture time. The latest suite contains 132 tests with clean static analysis; mocks/temporary stores do not replace physical-device testing.
+
+Generate the full acceptance artifact with `--output artifacts/ERP_Full_Acceptance_1.1.1.html` and the appropriate `--results`/`--analysis` log paths. Its standalone HTML inlines `qa/acceptance_plan.json` and `qa/acceptance_ui.js`. With Playwright and Chrome available, `node scripts/verify-acceptance-pack.cjs` verifies the checklist's approval rules, platform scope, required observations, backward-compatible import, safe report generation and narrow layout using disposable synthetic results only. It does not mark any real manual case passed.
 
 See [the warehouse1.1 upgrade and operating guide (Arabic)](WAREHOUSE_UPGRADE_GUIDE_AR.md) before using the new migration and purchasing/production flows. Physical-device acceptance remains necessary; costs are recorded explicitly, not inferred as perpetual inventory valuation.
 

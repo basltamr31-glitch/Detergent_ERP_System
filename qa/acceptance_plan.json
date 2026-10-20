@@ -1,0 +1,654 @@
+{
+  "title": "Full ERP acceptance test / اختبار قبول النظام بالكامل",
+  "revision": "2026-10-20",
+  "platformBuilds": {
+    "Windows": "1.1.1+9",
+    "ChromeOS": "1.1.0+8"
+  },
+  "instructions": [
+    "Open the installed ERP and keep this HTML beside it. This file records your observations; it does not run transactions or read the ERP database.",
+    "For Windows use START-TEST.cmd, click Enter test app, then choose English. Confirm the amber TEST banner before every posting/restore exercise. Username tester; password is in WINDOWS_TEST_LOGIN.md. Keep tester unchanged while creating other trial accounts.",
+    "Choose the approval platform and record your name, device and exact installed build. A platform filter only changes what you see; it never hides failures from the approval calculation.",
+    "Follow the walkthrough phases before running independent rejection/correction cases. Use distinct sample names/SKUs and save a verified business backup after each successful business cycle. Restoring a backup replaces business data; do it only in TEST or a disposable test installation.",
+    "Absolute example balances assume an empty TEST business database. If TEST already contains records, write down starting cash, receivables and payables, use new sample names, and compare the stated changes. Do not delete a database or record a fake real-world opening balance to make the example match.",
+    "For each case choose Pass, Fail, Blocked or N/A and record what actually happened. Pass means you performed it and saw the expected result. N/A needs a reason; an untested feature or unavailable recovery environment is Blocked, not Pass.",
+    "Record actual figures/document IDs in the evidence cases. Rejection tests must leave stock, documents and money unchanged. Use screenshots without passwords, personal customer details or account secrets.",
+    "All applicable cases must pass before the report says Ready for your sign-off. Pending, failed, blocked or unexplained exclusions prevent that status. Justified N/A cases still require scope review and are listed as exclusions.",
+    "Export JSON at the end of each session. Browser storage is local to this file/browser and may be unavailable; the export is your durable evidence. Download the approval report when finished and share the results JSON if a test fails."
+  ],
+  "criticalCaseIds": [
+    "TC-001",
+    "TC-004",
+    "TC-016",
+    "TC-018",
+    "TC-019",
+    "TC-020",
+    "TC-023",
+    "TC-025",
+    "TC-039",
+    "TC-040",
+    "TC-048",
+    "TC-050",
+    "TC-051",
+    "TC-052",
+    "TC-058",
+    "TC-059",
+    "TC-060",
+    "TC-061",
+    "TC-063",
+    "TC-065",
+    "TC-066",
+    "TC-070",
+    "TC-071",
+    "TC-072",
+    "TC-075",
+    "TC-076",
+    "TC-079",
+    "TC-080",
+    "TC-081",
+    "TC-082",
+    "TC-084",
+    "TC-092",
+    "TC-095",
+    "TC-097",
+    "TC-098",
+    "TC-103",
+    "TC-104",
+    "TC-106",
+    "TC-107",
+    "TC-108",
+    "TC-112",
+    "TC-114",
+    "TC-115",
+    "TC-120",
+    "TC-122",
+    "TC-123",
+    "TC-125",
+    "TC-129",
+    "TC-130",
+    "TC-131",
+    "TC-132"
+  ],
+  "evidenceCaseIds": [
+    "TC-039",
+    "TC-040",
+    "TC-050",
+    "TC-058",
+    "TC-060",
+    "TC-061",
+    "TC-070",
+    "TC-071",
+    "TC-079",
+    "TC-080",
+    "TC-081",
+    "TC-082",
+    "TC-095",
+    "TC-097",
+    "TC-105",
+    "TC-106",
+    "TC-107",
+    "TC-108",
+    "TC-115",
+    "TC-126",
+    "TC-130"
+  ],
+  "phases": [
+    {
+      "id": "start",
+      "title": "1. Open the correct test workspace",
+      "caseIds": [
+        "TC-120",
+        "TC-001",
+        "TC-121",
+        "TC-122",
+        "TC-123",
+        "TC-124",
+        "TC-125",
+        "TC-003",
+        "TC-004",
+        "TC-005"
+      ],
+      "steps": [
+        "Extract all of the Windows ZIP. Open START-TEST.cmd and click Enter test app. Choose English, then switch to العربية and back once. The native window title ends in TEST and the amber test-workspace banner stays visible across modules.",
+        "Visit each dashboard module and return. Close/reopen TEST, repeat the one-click login, and verify a saved trial record survives. Direct executable launch uses the original business login; use its Open test workspace button only to open the separate trial window.",
+        "Disconnect networking and open stock, costing and documents. All local features should still work. Printing/device checks have their own phase.",
+        "Record Windows build 1.1.1+9 in the metadata. For a Chromebook test use the installed Android application and its own local owner account; the existing APK is 1.1.0+8 and has no Windows test launcher. Test only disposable data there."
+      ],
+      "headers": [
+        "Check",
+        "Expected"
+      ],
+      "rows": [
+        [
+          "Trial login",
+          "Dashboard opens without typing; tester has owner permissions"
+        ],
+        [
+          "Workspace identity",
+          "TEST banner, separate persistent trial records, no business password reset"
+        ],
+        [
+          "Duplicate launch",
+          "Existing TEST window is shown; no competing database lock"
+        ]
+      ]
+    },
+    {
+      "id": "base",
+      "title": "2. Complete one raw-material → manufacturing → cash cycle",
+      "caseIds": [
+        "TC-070",
+        "TC-034",
+        "TC-039",
+        "TC-040",
+        "TC-048",
+        "TC-050",
+        "TC-058",
+        "TC-060",
+        "TC-061",
+        "TC-071",
+        "TC-072",
+        "TC-027",
+        "TC-028",
+        "TC-029"
+      ],
+      "steps": [
+        "Use unique sample names: UAT Supplier A, UAT Customer A, UAT Water, UAT Fragrance and UAT Cleaner Bottle. In Finance choose USD and note starting balances. Post trial opening cash USD 200: debit 1000 Cash, credit 3000 Equity, reason UAT funding. This is sample funding only.",
+        "In Customers & suppliers create the supplier and customer. In Raw-material warehouse open a purchase: Water 100 Kilogram at USD 1 and Fragrance 10 Kilogram at USD 5. Select supplier, USD, and pay USD 30 at posting. Do not pre-add the same raw stock. Save the invoice number.",
+        "In Business documents open that purchase and pay the remaining USD 120 once. Payable for this receipt becomes zero.",
+        "In Production & stock counts plan Cleaner: output 10 Kilogram, unique lot UAT-BULK-001, ingredients Water 9 kg and Fragrance 1 kg. No expiry is needed for this sample. Approve with a review note. Use bulk Release with QC confirmed and a quality reference; do not use Complete & receive finished goods in this bulk example.",
+        "In Finished-goods transfers transfer the full 10 kg into 20 Piece of a new Cleaner Bottle product. Enter reference selling price USD 10 and explicitly confirm the source/output conversion. This is a measured sample conversion, not an assumed kg-to-piece factor.",
+        "In Finished goods & trading sell 4 Piece of Cleaner Bottle at USD 10 each to UAT Customer A; USD 10 paid. Save the sale number. In Business documents pay the remaining USD 30 once.",
+        "Open Finance in USD, compare document balances with the ledger and check trial-balance difference zero. Inspect the sale's source lot UAT-BULK-001. Export a verified backup named UAT-after-base.json, restart and compare all figures before starting other mutations."
+      ],
+      "headers": [
+        "Checkpoint",
+        "Cash contribution from this cycle (USD)",
+        "New receivable",
+        "New payable",
+        "Stock"
+      ],
+      "rows": [
+        [
+          "Opening funding",
+          "200",
+          "0",
+          "0",
+          "No sample stock"
+        ],
+        [
+          "Raw purchase / pay 30",
+          "170",
+          "0",
+          "120",
+          "Water 100 kg; Fragrance 10 kg"
+        ],
+        [
+          "Pay supplier 120",
+          "50",
+          "0",
+          "0",
+          "Raw quantities unchanged"
+        ],
+        [
+          "Release / transfer",
+          "50",
+          "0",
+          "0",
+          "Water 91 kg; Fragrance 9 kg; finished 20 Piece; bulk remainder 0 kg"
+        ],
+        [
+          "Sell 4 / receive 10",
+          "60",
+          "30",
+          "0",
+          "Finished 16 Piece"
+        ],
+        [
+          "Receive remaining 30",
+          "90",
+          "0",
+          "0",
+          "Water 91 kg; Fragrance 9 kg; finished 16 Piece"
+        ]
+      ]
+    },
+    {
+      "id": "mixed",
+      "title": "3. Verify manufacturing and trading stock merge into one SKU",
+      "caseIds": [
+        "TC-103",
+        "TC-104",
+        "TC-107",
+        "TC-106",
+        "TC-108",
+        "TC-114",
+        "TC-115",
+        "TC-105",
+        "TC-109",
+        "TC-110",
+        "TC-111",
+        "TC-112",
+        "TC-113",
+        "TC-116",
+        "TC-117",
+        "TC-119",
+        "TC-129"
+      ],
+      "steps": [
+        "Keep the base-cycle records intact. Create separate sample supplier UAT Supplier B, customer UAT Customer B, raw material UAT Mix Base and finished SKU UAT-MIX-1 (name Mixed Cleaner, base unit Package). Defining the SKU must not create stock. Define this product's Carton as 12 Package.",
+        "Buy 20 kg of UAT Mix Base at USD 1/kg, paid zero, through raw purchasing. This adds 20 kg raw and USD 20 supplier payable. In Production & stock counts plan 24 Package of Mixed Cleaner using 12 kg of this raw material and lot UAT-MIX-M001. The planned output unit is Package, matching the finished SKU.",
+        "Approve the order. Use Complete & receive finished goods, choose UAT-MIX-1, actual usage 12 kg and actual output 24 Package. Confirm QC, enter a reference, total cost USD 48, confirmed, reviewed source UAT-COST-001. This total is a sample reviewed batch-cost snapshot; it is not computed automatically from the raw invoice.",
+        "Only AFTER the manufacturing receipt, use Trading purchases to buy 3 Carton of UAT-MIX-1 at USD 36/carton from UAT Supplier B, USD, paid zero. Preview must show 36 Package and total USD 108. Raw stock must stay 8 kg; no production order is created by this trading receipt.",
+        "Sell 30 Package of UAT-MIX-1 at USD 4 each, paid zero, to UAT Customer B. Document total USD 120. FIFO must allocate 24 manufacturing packages and 6 supplier packages. Verify the allocated receipt cost USD 66 and the remaining supplier stock 30 Package. This allocation is not a posted profit/COGS report.",
+        "Before reversing the sale, attempt a full return of the trading receipt. It must reject because 6 units of that original supplier lot are consumed, without changing stock/money. Do not replenish a different lot to substitute for it.",
+        "Reverse the full UNPAID sample sale with a reason. No customer money has been received in this example, so no cash refund is required. Stock returns to 60: manufacturing 24 and supplier 36, original total costs USD 48 and 108; this sale's receivable returns to zero. Keep the purchase documents intact for later source inspection.",
+        "On separate sample SKUs test a 1-Carton sale with factor 12, then change the conversion to 24 and verify old documents stay frozen. For a separate raw Powder receive 500 Gram at USD 0.01/Gram into Kilogram stock: 0.5 kg and USD 5 invoice. Use distinct items for variance, invalid QC/units and bulk-transfer rejection cases. Save UAT-after-mixed.json."
+      ],
+      "headers": [
+        "Stage",
+        "Mix raw (kg)",
+        "Manufactured Package",
+        "Supplier Package",
+        "Sale receivable / allocated cost"
+      ],
+      "rows": [
+        [
+          "Buy mix raw",
+          "20",
+          "0",
+          "0",
+          "No sale"
+        ],
+        [
+          "Manufacture first",
+          "8",
+          "24",
+          "0",
+          "Lot total cost USD 48"
+        ],
+        [
+          "Trading receipt next",
+          "8",
+          "24",
+          "36",
+          "Supplier lot total cost USD 108"
+        ],
+        [
+          "Sell 30 Package",
+          "8",
+          "0",
+          "30",
+          "USD 120 unpaid; allocated cost USD 66 = 48 + 18"
+        ],
+        [
+          "Reverse that unpaid sale",
+          "8",
+          "24",
+          "36",
+          "Sale receivable 0; original lot quantities/costs restored"
+        ]
+      ]
+    },
+    {
+      "id": "costing",
+      "title": "4. Check every production/packaging estimate against a calculator",
+      "caseIds": [
+        "TC-078",
+        "TC-079",
+        "TC-080",
+        "TC-081",
+        "TC-082",
+        "TC-083",
+        "TC-084",
+        "TC-085",
+        "TC-086",
+        "TC-087",
+        "TC-088",
+        "TC-089",
+        "TC-090",
+        "TC-093",
+        "TC-126",
+        "TC-127",
+        "TC-128"
+      ],
+      "steps": [
+        "Open Production costing. Use a separate estimate named UAT Estimate, output 10 kg, one ingredient Concentrate 2 kg at USD 10/kg, initially zero labor/overhead. Ingredient total USD 20; cost USD 2/kg. This estimate is separate from Operations and does not consume warehouse stock.",
+        "Add USD 5 batch labor and USD 3 overhead: batch USD 28, cost USD 2.80/kg. Mark the 2 kg ingredient active: report 20%; clear the flag: 0%.",
+        "In packaging choose 500 ml, measured density 1.2 kg/L, empty bottle USD 0.20 and label USD 0.10. Fill mass 0.6 kg; liquid USD 1.68; bottle USD 1.98. Six bottles/carton plus empty carton USD 0.60 gives USD 12.48.",
+        "Change fill to 500 g: fill mass 0.5 kg; bottle USD 1.70; carton USD 10.80. Restore 500 ml. Remove density temporarily: volume costing/report must give guidance instead of a fake cost. Confirm legacy units only if an old costing draft is available.",
+        "With rate unset, SYP is unavailable. With rate 100, batch SYP 2800 and per kg SYP 280. Restore rate as desired. Change good output to 5 kg: batch cost stays USD 28 and cost/kg becomes USD 5.60; restore 10 kg.",
+        "Try English and Arabic decimal keyboard input, row add/remove and invalid/oversized values in separate estimates. Reopen/restart and verify saved drafts. Generate Arabic and English PDFs and compare the printed numbers. Posted stock and journals must remain unchanged."
+      ],
+      "headers": [
+        "Quantity",
+        "Expected"
+      ],
+      "rows": [
+        [
+          "Material + labor + overhead",
+          "20 + 5 + 3 = USD 28"
+        ],
+        [
+          "Cost per kg",
+          "28 / 10 = USD 2.80"
+        ],
+        [
+          "Active ingredients",
+          "2 / 10 × 100 = 20% when flagged"
+        ],
+        [
+          "500 ml at density 1.2",
+          "0.5 L × 1.2 = 0.6 kg"
+        ],
+        [
+          "Bottle / carton",
+          "USD 1.98 / USD 12.48"
+        ],
+        [
+          "500 g alternative",
+          "USD 1.70 / USD 10.80"
+        ],
+        [
+          "Output reduced to 5 kg",
+          "USD 5.60/kg; batch USD 28"
+        ]
+      ]
+    },
+    {
+      "id": "access",
+      "title": "5. Verify roles, period controls and interface behavior",
+      "caseIds": [
+        "TC-013",
+        "TC-014",
+        "TC-015",
+        "TC-016",
+        "TC-017",
+        "TC-018",
+        "TC-019",
+        "TC-020",
+        "TC-021",
+        "TC-022",
+        "TC-023",
+        "TC-024",
+        "TC-025",
+        "TC-026",
+        "TC-030",
+        "TC-031",
+        "TC-032",
+        "TC-033",
+        "TC-035",
+        "TC-036",
+        "TC-037",
+        "TC-038",
+        "TC-073",
+        "TC-074",
+        "TC-075",
+        "TC-076",
+        "TC-077",
+        "TC-131"
+      ],
+      "steps": [
+        "As tester create separate temporary users for manager, accountant, warehouse, cashier and viewer in Users & roles; use trial-only passwords of at least 12 characters. Preserve tester. Sign out between roles; do not assume a role switch occurred while the previous session stays open.",
+        "Use the permission matrix below. Test both permitted actions on separate sample records and denied actions. Warehouse staff can execute approved production but cannot approve orders. Cashiers can receive/pay against documents but cannot post manual finance journals. Only owner manages users and reopens periods.",
+        "Test invalid credentials, native dialog cancellation, deactivated users and logout. For five-failure lockout use a dedicated additional trial account, never tester: wait five minutes before its valid retry. Do not save real passwords in checklist notes.",
+        "On sample data close the accounting period through today's UTC date. Attempt a posting: no stock/money/document may change. Accountant/manager reopening must fail. Sign in as tester and reopen with a recorded reason before continuing other tests.",
+        "Switch USD/SYP dashboard views: currencies must not be combined. A deliberately unallocated manual receivable test must display a reconciliation difference, then correct/reverse it with recorded reasons on trial data.",
+        "Check all modules in English/Arabic, large text/display scaling, narrow/wide windows, scrolling and back navigation. Cancel sample entry forms before posting and compare before/after balances. Observe contact rename/deactivation and duplicate names on separate trial contacts."
+      ]
+    },
+    {
+      "id": "controls",
+      "title": "6. Attempt invalid postings and reverse a complete paid chain",
+      "caseIds": [
+        "TC-041",
+        "TC-042",
+        "TC-043",
+        "TC-044",
+        "TC-045",
+        "TC-046",
+        "TC-047",
+        "TC-049",
+        "TC-051",
+        "TC-052",
+        "TC-053",
+        "TC-054",
+        "TC-055",
+        "TC-056",
+        "TC-057",
+        "TC-059",
+        "TC-062",
+        "TC-063",
+        "TC-064",
+        "TC-065",
+        "TC-066",
+        "TC-067",
+        "TC-068",
+        "TC-069",
+        "TC-101",
+        "TC-130"
+      ],
+      "steps": [
+        "Complete all stock/cash checkpoints and save backups BEFORE return tests. For independent errors/counts use separate UAT-REJECT items/documents, not the base/mixed example items. Record quantities, balances and document count before each rejected action and compare afterwards.",
+        "Reject negative/zero quantities where positive is required, malformed prices, wrong units, insufficient raw/finished stock, expired lots, missing QC/reasons, duplicate request/retry and multi-line documents with an invalid line. An error must not leave a partial receipt, sale, payment or stock movement.",
+        "Check stock counts with a reason: matching/zero counts, permitted positive adjustment and negative FIFO consumption. These are physical adjustments, not supplier purchases. Inspect immutable movements and actor/reason links.",
+        "For the original base sale, try to reverse it while money remains received: it must block. Record an ACTUAL USD 40 customer refund in TEST, then reverse the full sale. Finished stock becomes 20 Piece; cash contribution from the base cycle returns from USD 90 to 50; this sale's receivable stays zero.",
+        "Return the full base transfer (20 Piece → original 10 kg batch availability), reverse the bulk production batch, record an ACTUAL USD 150 supplier refund, then reverse the raw purchase. Base sample Water/Fragrance/finished stock become zero; base-cycle cash contribution returns to USD 200. Other independent sample transactions remain and must be compared separately.",
+        "Never mark a refund because you merely clicked Return: inspect the money movement. Partial document returns are not implemented in this release. Original documents, reversal links, lot costs and reasons must remain visible after full corrections."
+      ]
+    },
+    {
+      "id": "backup",
+      "title": "7. Verify documents, backup restoration, recovery and target devices",
+      "caseIds": [
+        "TC-091",
+        "TC-092",
+        "TC-094",
+        "TC-095",
+        "TC-096",
+        "TC-097",
+        "TC-098",
+        "TC-099",
+        "TC-100",
+        "TC-102",
+        "TC-118",
+        "TC-132",
+        "TC-133",
+        "TC-002",
+        "TC-006",
+        "TC-007",
+        "TC-008",
+        "TC-009",
+        "TC-010",
+        "TC-011",
+        "TC-012"
+      ],
+      "steps": [
+        "Find saved purchase/sale documents by search/filter. Compare line units, quantities, total, currency, payments and source lots with the walkthrough. Save PDFs in both languages; inspect long Arabic names and a 12-line sample document across pages. Physically print if printing is part of your intended use; unavailable hardware is Blocked.",
+        "In TEST save a verified backup and note its filename, message and checkpoint balances. Change a separate sample record, then restore the saved backup. Check the automatic safety-backup path and restored stock, documents, payments, recipes, periods and costing drafts. Restart and compare again. Never restore sample data over business data.",
+        "Cancel a restore confirmation: data must remain unchanged. Corrupt a COPY of the exported backup, leaving the original intact, and attempt validation: rejection must leave the current data unchanged. Confirm local users/passwords are excluded using TC-132.",
+        "Legacy migration and interruption recovery require disposable copied stores and controlled developer assistance. Do not unplug a production device or delete/edit Hive files to simulate this. If you cannot reproduce the boundary safely, record Blocked and request assistance; the automated recovery tests are separate evidence, not your manual result.",
+        "For ChromeOS repeat installation, keyboard, resize, sleep/resume, offline, restart and printing on the physical Chromebook. Cross-device backup transfer replaces business state and does not merge or synchronize installations; each device retains its own accounts.",
+        "Export results JSON and download the approval report. Review every Fail/Blocked/Pending/N/A and the remaining-scope table. Approve only the declared platform, build and tested functions when the evidence supports it."
+      ]
+    }
+  ],
+  "coverage": [
+    {
+      "category": "Installation and startup",
+      "screens": "Windows runner, startup errors, language selection"
+    },
+    {
+      "category": "ChromeOS Android installation",
+      "screens": "Installed Android activity, keyboard, resizable window, suspend/resume"
+    },
+    {
+      "category": "Authentication and roles",
+      "screens": "Sign in, native credentials, Users & roles, sign out"
+    },
+    {
+      "category": "Dashboard and navigation",
+      "screens": "Factory workspace, app shell/navigation, language and scaling"
+    },
+    {
+      "category": "Customers and suppliers",
+      "screens": "Customers & suppliers, customer/supplier details"
+    },
+    {
+      "category": "Purchases and raw inventory",
+      "screens": "Raw-material warehouse, purchase entry, raw-material details"
+    },
+    {
+      "category": "Production and traceability",
+      "screens": "Production & stock counts, recipes, orders, QC and batch history"
+    },
+    {
+      "category": "Transfers, sales and payments",
+      "screens": "Finished-goods transfers, finished stock, sale entry, settlements"
+    },
+    {
+      "category": "Finance and controls",
+      "screens": "Finance, journals, reconciliation, period closure/reopening"
+    },
+    {
+      "category": "Costing and packaging",
+      "screens": "Production costing, packaging/filling, final results and estimate PDFs"
+    },
+    {
+      "category": "Documents, printing and backup",
+      "screens": "Business documents, PDFs/printing, Backup & restore"
+    },
+    {
+      "category": "Warehouses 1.1 acceptance",
+      "screens": "Trading purchases, finished-product/SKU details, completion, sources/units/movements"
+    },
+    {
+      "category": "Windows test access",
+      "screens": "START-TEST.cmd, test profile, normal-login test launcher, persistent TEST banner"
+    }
+  ],
+  "roles": {
+    "headers": [
+      "Action",
+      "Owner",
+      "Manager",
+      "Accountant",
+      "Warehouse",
+      "Cashier",
+      "Viewer"
+    ],
+    "rows": [
+      [
+        "Raw stock / trading receipts / transfers / execute approved production",
+        "Yes",
+        "Yes",
+        "No",
+        "Yes",
+        "No",
+        "No"
+      ],
+      [
+        "Approve production",
+        "Yes",
+        "Yes",
+        "No",
+        "No",
+        "No",
+        "No"
+      ],
+      [
+        "Post sales",
+        "Yes",
+        "Yes",
+        "No",
+        "No",
+        "Yes",
+        "No"
+      ],
+      [
+        "Manual finance / period closure",
+        "Yes",
+        "Yes",
+        "Yes",
+        "No",
+        "No",
+        "No"
+      ],
+      [
+        "Document payments/refunds",
+        "Yes",
+        "Yes",
+        "Yes",
+        "No",
+        "Yes",
+        "No"
+      ],
+      [
+        "Create/update contacts",
+        "Yes",
+        "Yes",
+        "Yes",
+        "Yes",
+        "Yes",
+        "No"
+      ],
+      [
+        "Business backup / restore",
+        "Yes",
+        "Yes",
+        "Yes",
+        "No",
+        "No",
+        "No"
+      ],
+      [
+        "Manage local users / reopen period",
+        "Yes",
+        "No",
+        "No",
+        "No",
+        "No",
+        "No"
+      ],
+      [
+        "Edit shared local costing estimates (current behavior)",
+        "Yes",
+        "Yes",
+        "Yes",
+        "Yes",
+        "Yes",
+        "Yes"
+      ]
+    ]
+  },
+  "remainingScope": [
+    [
+      "Automatic raw FIFO valuation, perpetual inventory and COGS",
+      "Not implemented; entered/reviewed lot costs and costing estimates do not supply these journals."
+    ],
+    [
+      "Tax jurisdiction, legal invoice requirements and approved real opening balances",
+      "Require business/accounting decisions and relevant implementation; test PDFs leave tax unset."
+    ],
+    [
+      "Partial document returns, separate WIP/quality-hold execution",
+      "Outside this build; use the implemented complete-return and approved-completion workflows."
+    ],
+    [
+      "Live multi-device synchronization / shared users",
+      "Not implemented; devices have local accounts/databases and backup restore replaces destination state."
+    ],
+    [
+      "Production-signed Windows installer / public Google Play release",
+      "Current Windows package is portable/unsigned; existing Android APK is development-signed and not published to Play."
+    ],
+    [
+      "Physical keyboard/IME, target-device and printer acceptance",
+      "Requires your recorded manual results on each intended device; developer/widget tests cannot substitute for them."
+    ],
+    [
+      "Read-only role enforcement for costing estimate drafts",
+      "Estimate fields are currently shared local drafts and do not enforce posting permissions; a viewer can edit them. Read-only estimates per role require further development."
+    ]
+  ]
+}
