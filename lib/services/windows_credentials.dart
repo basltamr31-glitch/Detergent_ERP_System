@@ -1,6 +1,10 @@
 import 'package:flutter/services.dart';
 
 class WindowsCredentials {
+  static Future<void> openTestWorkspace() async {
+    await channel.invokeMethod<void>('openTestWorkspace');
+  }
+
   static const channel = MethodChannel('erp/windows_credentials');
   static Future<Map<String, String>?> prompt({required bool setup}) async {
     final value = await channel

@@ -154,7 +154,7 @@ class AuthService extends ChangeNotifier {
         'active': active
       });
       await _save(data);
-      if (AccessControl.user?['id'] == id) {
+      if (id != null && AccessControl.user?['id'] == id) {
         AccessControl.user =
             active ? {'id': updated['id'], 'name': name, 'role': role} : null;
       }

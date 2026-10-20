@@ -1,5 +1,13 @@
 # ERP release guide
 
+## Windows 1.1.1 test login (20 October 2026)
+
+Extract the full Windows ZIP and open **START-TEST.cmd**, then click **Enter test app / دخول التطبيق التجريبي**. The temporary credentials are username `tester`, password `Tester@2026!Demo`. Read WINDOWS_TEST_LOGIN.md. The explicit `--demo` profile stores its own account and business boxes under the local application support directory's `test-profile-v1` subdirectory, with a separate native instance guard and a persistent amber TEST banner. It starts with empty business records and preserves trial work across restarts.
+
+The regular Windows login page can open the same separate test window. Direct executable launch keeps the original business database and local authentication; no shared account is added there and no existing password is reset. Incorrect credentials now show a bilingual explanation. Creating a user no longer accidentally marks it signed in through a null-ID comparison; the normal password login establishes the session.
+
+The native runner resolves assets from the executable directory and explains an incomplete data folder before engine creation. Packaging includes the test launcher and instructions with the full runtime/assets folder. Automated coverage includes account/storage isolation, persistence, unchanged business records, changed test passwords, one-click login, manual tester login, logout, regular login failure messages and mocked native trial launch. Native window launch, keyboard/device behavior and a clean Windows machine remain manual acceptance checks. The existing Chromebook APK is still 1.1.0+8; this delivery rebuilds Windows only.
+
 This release is an offline factory ERP baseline for independent Windows and Android installations. It preserves the Cairo font, Arabic/English template and module colors. Devices do not share live data; importing a backup replaces the destination business state rather than merging it.
 
 ## Windows

@@ -1,13 +1,31 @@
 {
-  "version": "1.1.0+8",
+  "version": "1.1.1+9",
   "verification": {
-    "capturedAt": "2026-10-19T14:04:01.073950+00:00",
+    "capturedAt": "2026-10-20T17:47:16.843919+00:00",
     "testRunSuccess": true,
-    "resultsSha256": "615e45d3edc749c02ccb2b150b80a5cb2c3be588c8c7c73c1e8bc46ed00da8f6",
+    "resultsSha256": "c8f9b039edefb58ca4362c1052afdd1f26172294cf5d5fcb91c14a372f304a0d",
     "analysisSha256": "eb96b591f2cb274fa10137072ab9f442735bc4a26e2bfef49f5029e11002b631",
     "analysisStatus": "No issues found"
   },
   "tests": [
+    {
+      "name": "Trial storage is enabled only by the explicit demo argument",
+      "file": "test/app_profile_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Production profile never provisions the shared tester account",
+      "file": "test/app_profile_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Trial bootstrap persists access and records without touching business boxes",
+      "file": "test/app_profile_test.dart",
+      "result": "success",
+      "skipped": false
+    },
     {
       "name": "Authentication edits survive deletion, composition and rebuilds in en",
       "file": "test/auth_editor_test.dart",
@@ -93,8 +111,32 @@
       "skipped": false
     },
     {
+      "name": "Backup restore cancellation at 320.0 in ar",
+      "file": "test/backup_ui_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Backup restore cancellation at 1280.0 in en",
+      "file": "test/backup_ui_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Backup restore cancellation at 1280.0 in ar",
+      "file": "test/backup_ui_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
       "name": "Later payments persist, retry once and reject overpayment or reversal",
       "file": "test/business_documents_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Batch charges and restored product name at 1280.0 in en",
+      "file": "test/batch_costs_ui_test.dart",
       "result": "success",
       "skipped": false
     },
@@ -117,14 +159,14 @@
       "skipped": false
     },
     {
-      "name": "Sales snapshot price and currency and reversal restores stock once",
-      "file": "test/business_documents_test.dart",
+      "name": "Batch charges and restored product name at 320.0 in ar",
+      "file": "test/batch_costs_ui_test.dart",
       "result": "success",
       "skipped": false
     },
     {
-      "name": "Backup restore cancellation at 320.0 in ar",
-      "file": "test/backup_ui_test.dart",
+      "name": "Sales snapshot price and currency and reversal restores stock once",
+      "file": "test/business_documents_test.dart",
       "result": "success",
       "skipped": false
     },
@@ -159,8 +201,8 @@
       "skipped": false
     },
     {
-      "name": "Backup restore cancellation at 1280.0 in en",
-      "file": "test/backup_ui_test.dart",
+      "name": "Batch charges and restored product name at 1280.0 in ar",
+      "file": "test/batch_costs_ui_test.dart",
       "result": "success",
       "skipped": false
     },
@@ -171,32 +213,8 @@
       "skipped": false
     },
     {
-      "name": "Batch charges and restored product name at 1280.0 in en",
-      "file": "test/batch_costs_ui_test.dart",
-      "result": "success",
-      "skipped": false
-    },
-    {
-      "name": "Backup restore cancellation at 1280.0 in ar",
-      "file": "test/backup_ui_test.dart",
-      "result": "success",
-      "skipped": false
-    },
-    {
-      "name": "Batch charges and restored product name at 320.0 in ar",
-      "file": "test/batch_costs_ui_test.dart",
-      "result": "success",
-      "skipped": false
-    },
-    {
       "name": "Explicit fill units, density and costing readiness at 320.0 in en",
       "file": "test/costing_ui_test.dart",
-      "result": "success",
-      "skipped": false
-    },
-    {
-      "name": "Batch charges and restored product name at 1280.0 in ar",
-      "file": "test/batch_costs_ui_test.dart",
       "result": "success",
       "skipped": false
     },
@@ -213,25 +231,19 @@
       "skipped": false
     },
     {
-      "name": "Receipt form and populated documents at 320.0 in en",
-      "file": "test/document_ui_test.dart",
-      "result": "success",
-      "skipped": false
-    },
-    {
       "name": "Explicit fill units, density and costing readiness at 1280.0 in en",
       "file": "test/costing_ui_test.dart",
       "result": "success",
       "skipped": false
     },
     {
-      "name": "Explicit fill units, density and costing readiness at 320.0 in ar",
-      "file": "test/costing_ui_test.dart",
+      "name": "Authentication edits survive deletion, composition and rebuilds in ar",
+      "file": "test/auth_editor_test.dart",
       "result": "success",
       "skipped": false
     },
     {
-      "name": "Explicit fill units, density and costing readiness at 1280.0 in ar",
+      "name": "Explicit fill units, density and costing readiness at 320.0 in ar",
       "file": "test/costing_ui_test.dart",
       "result": "success",
       "skipped": false
@@ -243,26 +255,38 @@
       "skipped": false
     },
     {
-      "name": "Multiple receipt lines persist and fail atomically on inconsistent units",
-      "file": "test/erp_operations_test.dart",
-      "result": "success",
-      "skipped": false
-    },
-    {
-      "name": "Authentication edits survive deletion, composition and rebuilds in ar",
-      "file": "test/auth_editor_test.dart",
-      "result": "success",
-      "skipped": false
-    },
-    {
-      "name": "Multi-item sale, actual refunds, return and journals reconcile",
-      "file": "test/erp_operations_test.dart",
+      "name": "Explicit fill units, density and costing readiness at 1280.0 in ar",
+      "file": "test/costing_ui_test.dart",
       "result": "success",
       "skipped": false
     },
     {
       "name": "Dashboard balances and module navigation at 320.0 in ar",
       "file": "test/dashboard_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Receipt form and populated documents at 320.0 in en",
+      "file": "test/document_ui_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Dashboard balances and module navigation at 1280.0 in ar",
+      "file": "test/dashboard_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Multiple receipt lines persist and fail atomically on inconsistent units",
+      "file": "test/erp_operations_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Multi-item sale, actual refunds, return and journals reconcile",
+      "file": "test/erp_operations_test.dart",
       "result": "success",
       "skipped": false
     },
@@ -299,12 +323,6 @@
     {
       "name": "Approved recipe orders release once, transfer and trace sale lots with expiry protection",
       "file": "test/erp_operations_test.dart",
-      "result": "success",
-      "skipped": false
-    },
-    {
-      "name": "Dashboard balances and module navigation at 1280.0 in ar",
-      "file": "test/dashboard_test.dart",
       "result": "success",
       "skipped": false
     },
@@ -399,14 +417,14 @@
       "skipped": false
     },
     {
-      "name": "Receipt form and populated documents at 1280.0 in en",
-      "file": "test/document_ui_test.dart",
+      "name": "Unit changes and duplicate submissions cannot alter stock",
+      "file": "test/inventory_test.dart",
       "result": "success",
       "skipped": false
     },
     {
-      "name": "Unit changes and duplicate submissions cannot alter stock",
-      "file": "test/inventory_test.dart",
+      "name": "Receipt form and populated documents at 1280.0 in en",
+      "file": "test/document_ui_test.dart",
       "result": "success",
       "skipped": false
     },
@@ -501,8 +519,8 @@
       "skipped": false
     },
     {
-      "name": "Receipt form and populated documents at 320.0 in ar",
-      "file": "test/document_ui_test.dart",
+      "name": "Production approval, transfer, finance and sign-in at 1280.0 in en",
+      "file": "test/erp_ui_test.dart",
       "result": "success",
       "skipped": false
     },
@@ -513,8 +531,8 @@
       "skipped": false
     },
     {
-      "name": "Production approval, transfer, finance and sign-in at 1280.0 in en",
-      "file": "test/erp_ui_test.dart",
+      "name": "Receipt form and populated documents at 320.0 in ar",
+      "file": "test/document_ui_test.dart",
       "result": "success",
       "skipped": false
     },
@@ -537,6 +555,12 @@
       "skipped": false
     },
     {
+      "name": "Actual production completion at 320.0 in en",
+      "file": "test/production_completion_ui_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
       "name": "Permissions, accounting lock and lot expiry apply to combined completion",
       "file": "test/production_completion_test.dart",
       "result": "success",
@@ -549,18 +573,6 @@
       "skipped": false
     },
     {
-      "name": "Receipt form and populated documents at 1280.0 in ar",
-      "file": "test/document_ui_test.dart",
-      "result": "success",
-      "skipped": false
-    },
-    {
-      "name": "Actual production completion at 320.0 in en",
-      "file": "test/production_completion_ui_test.dart",
-      "result": "success",
-      "skipped": false
-    },
-    {
       "name": "Windows sharing and lock violations get actionable startup guidance",
       "file": "test/startup_error_test.dart",
       "result": "success",
@@ -569,6 +581,12 @@
     {
       "name": "Production approval, transfer, finance and sign-in at 320.0 in ar",
       "file": "test/erp_ui_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Receipt form and populated documents at 1280.0 in ar",
+      "file": "test/document_ui_test.dart",
       "result": "success",
       "skipped": false
     },
@@ -633,14 +651,38 @@
       "skipped": false
     },
     {
-      "name": "Same SKU combines production and carton purchasing with exact source costs",
-      "file": "test/trading_inventory_test.dart",
+      "name": "Sales entry posts a priced document in en",
+      "file": "test/document_ui_test.dart",
       "result": "success",
       "skipped": false
     },
     {
-      "name": "Sales entry posts a priced document in en",
+      "name": "Windows trial button reaches dashboard without typing or a native prompt and works after logout",
+      "file": "test/test_login_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Production approval, transfer, finance and sign-in at 1280.0 in ar",
+      "file": "test/erp_ui_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Sales entry posts a priced document in ar",
       "file": "test/document_ui_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Actual production completion at 1280.0 in en",
+      "file": "test/production_completion_ui_test.dart",
+      "result": "success",
+      "skipped": false
+    },
+    {
+      "name": "Same SKU combines production and carton purchasing with exact source costs",
+      "file": "test/trading_inventory_test.dart",
       "result": "success",
       "skipped": false
     },
@@ -653,12 +695,6 @@
     {
       "name": "Purchase and sale preserve invoice and stock units after master revision",
       "file": "test/trading_inventory_test.dart",
-      "result": "success",
-      "skipped": false
-    },
-    {
-      "name": "Trading receipt converts cartons and shows source cost at 320.0 in en",
-      "file": "test/trading_ui_test.dart",
       "result": "success",
       "skipped": false
     },
@@ -687,8 +723,8 @@
       "skipped": false
     },
     {
-      "name": "Sales entry posts a priced document in ar",
-      "file": "test/document_ui_test.dart",
+      "name": "Actual production completion at 320.0 in ar",
+      "file": "test/production_completion_ui_test.dart",
       "result": "success",
       "skipped": false
     },
@@ -699,8 +735,8 @@
       "skipped": false
     },
     {
-      "name": "Production approval, transfer, finance and sign-in at 1280.0 in ar",
-      "file": "test/erp_ui_test.dart",
+      "name": "Trading receipt converts cartons and shows source cost at 320.0 in en",
+      "file": "test/trading_ui_test.dart",
       "result": "success",
       "skipped": false
     },
@@ -711,7 +747,7 @@
       "skipped": false
     },
     {
-      "name": "Actual production completion at 1280.0 in en",
+      "name": "Actual production completion at 1280.0 in ar",
       "file": "test/production_completion_ui_test.dart",
       "result": "success",
       "skipped": false
@@ -723,13 +759,13 @@
       "skipped": false
     },
     {
-      "name": "Actual production completion at 320.0 in ar",
-      "file": "test/production_completion_ui_test.dart",
+      "name": "Production navigation at 390.0 in ar",
+      "file": "test/widget_test.dart",
       "result": "success",
       "skipped": false
     },
     {
-      "name": "Production navigation at 390.0 in ar",
+      "name": "Production navigation at 1280.0 in en",
       "file": "test/widget_test.dart",
       "result": "success",
       "skipped": false
@@ -741,7 +777,7 @@
       "skipped": false
     },
     {
-      "name": "Production navigation at 1280.0 in en",
+      "name": "Production navigation at 1280.0 in ar",
       "file": "test/widget_test.dart",
       "result": "success",
       "skipped": false
@@ -749,18 +785,6 @@
     {
       "name": "Trading receipt converts cartons and shows source cost at 1280.0 in en",
       "file": "test/trading_ui_test.dart",
-      "result": "success",
-      "skipped": false
-    },
-    {
-      "name": "Actual production completion at 1280.0 in ar",
-      "file": "test/production_completion_ui_test.dart",
-      "result": "success",
-      "skipped": false
-    },
-    {
-      "name": "Production navigation at 1280.0 in ar",
-      "file": "test/widget_test.dart",
       "result": "success",
       "skipped": false
     },

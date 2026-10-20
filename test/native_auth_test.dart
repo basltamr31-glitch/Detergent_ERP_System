@@ -38,15 +38,24 @@ void main() {
       auth = await AuthService.open();
     });
     int prompts = 0;
+    int trialLaunches = 0;
     bool cancel = true;
+    bool wrongAccount = false;
     final messenger =
         TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
     messenger.setMockMethodCallHandler(WindowsCredentials.channel,
         (call) async {
+      if (call.method == 'openTestWorkspace') {
+        trialLaunches++;
+        return null;
+      }
       expect(call.method, 'prompt');
       prompts++;
       if (cancel) return null;
       expect(call.arguments['setup'], auth.needsSetup);
+      if (wrongAccount) {
+        return {'name': 'Missing account', 'password': 'Not the password'};
+      }
       return {'name': 'باسل', 'password': 'Native test password 123'};
     });
     addTearDown(() async {
@@ -62,6 +71,11 @@ void main() {
         .pumpWidget(MyApp(auth: auth, warehouse: warehouse, shop: shop));
     await tester.pumpAndSettle();
     expect(find.byType(TextField), findsNothing);
+    await tester.tap(find.byKey(const ValueKey('open-test-workspace')));
+    await tester.pumpAndSettle();
+    expect(trialLaunches, 1);
+    expect(auth.user, isNull);
+    expect(auth.needsSetup, true);
     await tester.tap(find.byType(FilledButton));
     await tester.pumpAndSettle();
     expect(auth.needsSetup, true);
@@ -105,9 +119,21 @@ void main() {
     auth.logout();
     await tester.pumpAndSettle();
     expect(find.byType(AuthScreen), findsOneWidget);
+    expect(find.byKey(const ValueKey('test-sign-in')), findsNothing);
+    expect(find.byKey(const ValueKey('test-profile-banner')), findsNothing);
+    wrongAccount = true;
+    await tester.runAsync(() async {
+      await tester.tap(find.byType(FilledButton));
+      // Native dialog and authentication are asynchronous even for an unknown user.
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+    });
+    await tester.pumpAndSettle();
+    expect(auth.user, isNull);
+    expect(find.textContaining('START-TEST.cmd'), findsOneWidget);
+    wrongAccount = false;
     await submit();
     expect(find.byType(LanguageSelectionScreen), findsOneWidget);
-    expect(prompts, 3);
+    expect(prompts, 4);
     expect(tester.takeException(), isNull);
     await tester.pumpWidget(const SizedBox());
     debugDefaultTargetPlatformOverride = null;

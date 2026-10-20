@@ -1,6 +1,6 @@
 # Detergent Factory ERP
 
-An offline Flutter ERP for a detergent factory, retaining the Cairo font, Arabic RTL/English interface and module colors. Current version: **1.1.0+8**. Windows x64 release and Android debug builds have been compiled; Chromebook support uses the installed Android application on ChromeOS.
+An offline Flutter ERP for a detergent factory, retaining the Cairo font, Arabic RTL/English interface and module colors. Current Windows version: **1.1.1+9**. Latest packaged Chromebook/Android test build: **1.1.0+8**. Chromebook support uses the installed Android application on ChromeOS.
 
 ## Current workflows
 
@@ -19,11 +19,13 @@ Installations maintain independent accounts and business databases. A backup res
 
 ## Install and test the current build
 
-Windows: extract the complete portable ZIP and launch `detergent_factory.exe` with its DLLs and data folder. On first use, create your own local owner with a password of at least 12 characters. Windows offers a native credential dialog; enter ERP account details there. The user confirmed this route reaches the menu.
+Windows trial: extract the complete portable ZIP, open **START-TEST.cmd**, and click **Enter test app**. A separate test workspace has username `tester` and password `Tester@2026!Demo`; no typing is required for the shortcut. Test records persist independently of the existing business database. See [Windows test access](WINDOWS_TEST_LOGIN.md). The regular login page also offers **Open test workspace**.
+
+Windows business access: launch `detergent_factory.exe` directly with its DLLs and data folder. Use the local account created on this computer, or create the first owner on a new business installation. The temporary tester credentials are provisioned only in the explicit trial workspace. Business accounts, password verification and lockout remain in place.
 
 ChromeOS: install the Android test APK through a permitted ADB setup. It includes ARM32, ARM64 and x86_64 libraries, optional touchscreen support and a resizable window. Physical keyboard numeric entry works at narrow widths with an optional touch keypad. The APK is debug-signed and has not been published to Google Play. Follow [Chromebook installation and test instructions](CHROMEBOOK_GUIDE.md); Play Store availability alone does not install a downloaded APK.
 
-Open `ERP_Test_Pack_1.1.0.html` locally for **119 manual acceptance cases** and the full inventory of **128 passing automated tests**. Filter by platform/category, record status/notes and export JSON or CSV results. Physical Chromebook and printer acceptance remain pending. This HTML is a checklist for testing the installed ERP.
+Open `ERP_Test_Pack_1.1.1.html` locally for **125 manual acceptance cases** and the full inventory of **132 passing automated tests**. Filter by platform/category, record status/notes and export JSON or CSV results. Record the actual installed build, including 1.1.0+8 for the existing Chromebook APK. Physical Windows/Chromebook and printer acceptance remain pending. This HTML is a checklist for testing the installed ERP.
 
 Generated APK/ZIP/HTML files live under ignored `artifacts/` in the build workspace. Source catalogs and scripts are tracked under `qa/` and `scripts/`; binaries are not repository downloads. Review the [release guide](RELEASE_GUIDE.md) before installation/upgrades. See [development phases](DEVELOPMENT_PHASES.md) for verification history.
 

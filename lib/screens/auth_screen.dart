@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/auth_service.dart';
 import '../providers/app_language_provider.dart';
+import '../services/app_profile.dart';
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key});
@@ -20,6 +21,7 @@ class _AuthScreenState extends State<AuthScreen> {
   bool _submitting = false;
   bool _useInAppFields = false;
   String? _error;
+  bool get _testProfile => context.read<AppProfile?>()?.isTest ?? false;
   String t(String en, String ar) =>
       Localizations.localeOf(context).languageCode == 'ar' ? ar : en;
 
@@ -34,10 +36,11 @@ class _AuthScreenState extends State<AuthScreen> {
   bool get _native =>
       Theme.of(context).platform == TargetPlatform.windows && !_useInAppFields;
 
-  Future<void> _submit() async {
+  Future<void> _submit({bool testShortcut = false}) async {
     final auth = context.read<AuthService>();
     if (_submitting || auth.busy) return;
-    if (!_native && !_form.currentState!.validate()) return;
+    final useTestAccount = testShortcut && _testProfile;
+    if (!useTestAccount && !_native && !_form.currentState!.validate()) return;
     FocusScope.of(context).unfocus();
     setState(() {
       _submitting = true;
@@ -45,7 +48,10 @@ class _AuthScreenState extends State<AuthScreen> {
     });
     try {
       String name = _name.text.trim(), password = _password.text;
-      if (_native) {
+      if (useTestAccount) {
+        name = AppProfile.testerName;
+        password = AppProfile.testerPassword;
+      } else if (_native) {
         final credentials =
             await WindowsCredentials.prompt(setup: auth.needsSetup);
         if (credentials == null || !mounted) return;
@@ -64,6 +70,36 @@ class _AuthScreenState extends State<AuthScreen> {
         await auth.saveUser(name: name, role: 'owner', password: password);
       }
       await auth.login(name, password);
+    } catch (e) {
+      if (mounted) setState(() => _error = _authenticationError(e));
+    } finally {
+      if (mounted) setState(() => _submitting = false);
+    }
+  }
+
+  String _authenticationError(Object error) {
+    if (error is StateError &&
+        error.message == 'Invalid username or password.') {
+      return t(
+          'The username or password is incorrect. Use the account created on this computer. For trial access, open START-TEST.cmd in the Windows package.',
+          'اسم المستخدم أو كلمة المرور غير صحيحة. استخدم الحساب الذي أنشأته على هذا الجهاز. للتجربة افتح START-TEST.cmd من حزمة ويندوز.');
+    }
+    if (error is StateError &&
+        error.message == 'Account is inactive or temporarily locked.') {
+      return t(
+          'This account is inactive or locked after repeated attempts. Wait 5 minutes, or contact the local owner.',
+          'الحساب معطل أو مقفل بعد محاولات متكررة. انتظر ٥ دقائق أو تواصل مع مالك النظام على هذا الجهاز.');
+    }
+    return error.toString();
+  }
+
+  Future<void> _openTestWorkspace() async {
+    setState(() {
+      _submitting = true;
+      _error = null;
+    });
+    try {
+      await WindowsCredentials.openTestWorkspace();
     } catch (e) {
       if (mounted) setState(() => _error = e.toString());
     } finally {
@@ -100,6 +136,25 @@ class _AuthScreenState extends State<AuthScreen> {
               shrinkWrap: true,
               padding: const EdgeInsets.all(24),
               children: [
+                if (_testProfile) ...[
+                  Text(t('Try the ERP', 'تجربة نظام ERP'),
+                      style: Theme.of(context).textTheme.headlineSmall),
+                  Text(t(
+                      'Start immediately with the tester account. Test records are saved separately on this computer.',
+                      'ابدأ مباشرة بحساب التجربة. تُحفظ سجلات التجربة بشكل منفصل على هذا الجهاز.')),
+                  const SizedBox(height: 12),
+                  FilledButton.icon(
+                    key: const ValueKey('test-sign-in'),
+                    onPressed: busy ? null : () => _submit(testShortcut: true),
+                    icon: const Icon(Icons.play_arrow),
+                    label: Text(t('Enter test app', 'دخول التطبيق التجريبي')),
+                  ),
+                  const SizedBox(height: 12),
+                  const SelectableText(
+                      'Username: ${AppProfile.testerName}\nPassword: ${AppProfile.testerPassword}',
+                      textDirection: TextDirection.ltr),
+                  const Divider(height: 32),
+                ],
                 Text(
                     auth.needsSetup
                         ? t('Create the first owner account',
@@ -182,6 +237,7 @@ class _AuthScreenState extends State<AuthScreen> {
                 if (_error != null) Text(_error!),
                 const SizedBox(height: 16),
                 FilledButton(
+                    key: const ValueKey('auth-submit'),
                     onPressed: busy ? null : _submit,
                     child: Text(_native
                         ? t('Enter credentials and sign in',
@@ -197,6 +253,20 @@ class _AuthScreenState extends State<AuthScreen> {
                           : () => setState(() => _useInAppFields = true),
                       child: Text(t(
                           'Use in-app fields', 'استخدام الحقول داخل التطبيق'))),
+                if (!_testProfile &&
+                    Theme.of(context).platform == TargetPlatform.windows) ...[
+                  const Divider(height: 24),
+                  OutlinedButton.icon(
+                    key: const ValueKey('open-test-workspace'),
+                    onPressed: busy ? null : _openTestWorkspace,
+                    icon: const Icon(Icons.science_outlined),
+                    label: Text(t('Open test workspace — no password needed',
+                        'فتح بيئة التجربة — دون الحاجة لكلمة مرور')),
+                  ),
+                  Text(t(
+                      'A separate window opens with the tester account and its own test records.',
+                      'تفتح نافذة منفصلة بحساب التجربة وسجلاتها المستقلة.')),
+                ],
                 if (busy) const LinearProgressIndicator(),
               ],
             )),

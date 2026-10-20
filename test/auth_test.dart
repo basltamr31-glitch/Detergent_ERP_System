@@ -31,6 +31,9 @@ void main() {
       await auth.saveUser(
           name: 'Owner', role: 'owner', password: 'Test password 12345');
       expect(auth.needsSetup, false);
+      expect(auth.user, isNull,
+          reason:
+              'Creating an account must not sign it in before password verification');
       expect(
           Hive.box<String>('local_users_v1')
               .get('state')!

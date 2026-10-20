@@ -1,9 +1,10 @@
 {
-  "version": "1.1.0+8",
+  "version": "1.1.1+9",
   "preparation": [
+    "Windows 1.1.1: extract the complete ZIP, open START-TEST.cmd and click Enter test app. The tester account is provisioned only in the separate test-profile-v1 workspace. The latest Chromebook APK remains 1.1.0+8; enter the actual installed build above.",
     "Use sample data in an empty trial profile for exact balances. Do not reset or overwrite real business data.",
     "Export a business backup before testing. Keep it off the device.",
-    "Create your own owner/test-user passwords; never record them in test results.",
+    "Windows test access is documented in WINDOWS_TEST_LOGIN.md. For business/Android profiles create your own local owner password; never put private credentials in results.",
     "Use English labels for the walkthrough, then repeat the language/layout checks in Arabic.",
     "Run the exact base cycle in this order: TC-070, TC-034, TC-039, TC-040, TC-048, TC-050, TC-058, TC-060, TC-061, TC-071. Check the USD 90 cash and stock totals before running the refund/return chain TC-065, TC-066 and TC-068.",
     "Use separate trial items/documents for other mutation and rejection tests so they do not alter the base cycle. Category/ID order is a catalog, not an instruction to run every case against the same records.",
@@ -1274,6 +1275,79 @@
       ],
       "expected": "The visible quantity remains the entered quantity during layout changes; deleted digits do not return. Cancellation changes no raw or finished stock.",
       "platform": "Both"
+    },
+    {
+      "id": "TC-120",
+      "category": "Windows test access",
+      "title": "One-click Windows trial login",
+      "steps": [
+        "Extract the complete 1.1.1 Windows ZIP",
+        "Open START-TEST.cmd",
+        "Click Enter test app, then choose a language"
+      ],
+      "expected": "The real ERP dashboard opens without typing or a Windows credential prompt. The amber test banner stays visible.",
+      "platform": "Windows"
+    },
+    {
+      "id": "TC-121",
+      "category": "Windows test access",
+      "title": "Open trial from the regular login page",
+      "steps": [
+        "Open detergent_factory.exe directly",
+        "Click Open test workspace — no password needed",
+        "In the separate TEST window, click Enter test app"
+      ],
+      "expected": "A separate trial window opens. The business account is not signed in or reset.",
+      "platform": "Windows"
+    },
+    {
+      "id": "TC-122",
+      "category": "Windows test access",
+      "title": "Trial records survive restart",
+      "steps": [
+        "Create a sample trial item and save it",
+        "Close the TEST window",
+        "Open START-TEST.cmd again and use Enter test app"
+      ],
+      "expected": "The same tester account and saved trial item remain. No second owner setup is requested.",
+      "platform": "Windows"
+    },
+    {
+      "id": "TC-123",
+      "category": "Windows test access",
+      "title": "Trial and business storage separation",
+      "steps": [
+        "Use sample records in TEST",
+        "Close TEST and open the existing business workspace with its original owner account",
+        "Review known business records and return to TEST"
+      ],
+      "expected": "Trial changes do not appear in business stock/accounts. TEST retains its independent records. Do not import a real backup for this check.",
+      "platform": "Windows"
+    },
+    {
+      "id": "TC-124",
+      "category": "Windows test access",
+      "title": "Trial instance guard and working directory",
+      "steps": [
+        "Launch START-TEST.cmd twice",
+        "Check that the existing TEST window is shown",
+        "Launch a shortcut to detergent_factory.exe with argument --demo and another Start in directory"
+      ],
+      "expected": "Only one trial process owns the trial data. Assets resolve from the executable folder even with a different working directory; business profile has a separate guard.",
+      "platform": "Windows"
+    },
+    {
+      "id": "TC-125",
+      "category": "Windows test access",
+      "title": "Tester manual sign-in and logout",
+      "steps": [
+        "In TEST sign out",
+        "Use the native credential button or Use in-app fields",
+        "Enter the tester credentials printed in WINDOWS_TEST_LOGIN.md",
+        "Sign out and use Enter test app again"
+      ],
+      "expected": "Both manual credentials and the one-click shortcut reach the ERP. Original business accounts cannot be reset through the shortcut; account locks/password changes still apply.",
+      "platform": "Windows"
     }
   ]
 }

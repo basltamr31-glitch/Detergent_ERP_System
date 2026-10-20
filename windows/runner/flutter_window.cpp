@@ -1,6 +1,7 @@
 #include "flutter_window.h"
 
 #include <optional>
+#include <iterator>
 #include <wincred.h>
 #include <flutter/standard_method_codec.h>
 #include "utils.h"
@@ -34,6 +35,29 @@ bool FlutterWindow::OnCreate() {
   credential_channel_->SetMethodCallHandler(
       [this](const flutter::MethodCall<flutter::EncodableValue>& call,
              std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>> result) {
+        if (call.method_name() == "openTestWorkspace") {
+          wchar_t executable_path[32768] = {};
+          const DWORD path_length = ::GetModuleFileNameW(nullptr, executable_path,
+                                                        static_cast<DWORD>(std::size(executable_path)));
+          if (path_length == 0 || path_length >= std::size(executable_path)) {
+            result->Error("TEST_LAUNCH", "Unable to locate the ERP executable.");
+            return;
+          }
+          std::wstring command = L"\"" + std::wstring(executable_path) + L"\" --demo";
+          STARTUPINFOW startup = {};
+          startup.cb = sizeof(startup);
+          PROCESS_INFORMATION process = {};
+          if (!::CreateProcessW(executable_path, command.data(), nullptr, nullptr,
+                                FALSE, 0, nullptr, nullptr, &startup, &process)) {
+            result->Error("TEST_LAUNCH", "Unable to open test workspace: " +
+                          std::to_string(::GetLastError()));
+            return;
+          }
+          ::CloseHandle(process.hThread);
+          ::CloseHandle(process.hProcess);
+          result->Success();
+          return;
+        }
         if (call.method_name() != "prompt") {
           result->NotImplemented();
           return;

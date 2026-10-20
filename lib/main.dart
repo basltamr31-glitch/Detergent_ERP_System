@@ -20,15 +20,17 @@ import 'models/manufactured_product.dart';
 import 'services/backup_service.dart';
 import 'services/transfer_service.dart';
 import 'services/startup_error.dart';
+import 'services/app_profile.dart';
 
 bool _starting = false;
 
-void main() async {
+void main(List<String> arguments) async {
   if (_starting) return;
   _starting = true;
   WidgetsFlutterBinding.ensureInitialized();
+  final profile = AppProfile.fromArguments(arguments);
   try {
-    await Hive.initFlutter();
+    await profile.initializeStorage();
 
     if (!Hive.isAdapterRegistered(0)) {
       Hive.registerAdapter(my_models.MaterialAdapter());
@@ -49,7 +51,8 @@ void main() async {
     AccessControl.enabled = true;
     AccessControl.user = null;
     final auth = await AuthService.open();
-    runApp(MyApp(auth: auth));
+    await profile.prepareAccount(auth);
+    runApp(MyApp(auth: auth, profile: profile));
   } catch (e) {
     await Hive.close();
     runApp(MaterialApp(
@@ -74,8 +77,9 @@ void main() async {
           children: [SelectableText(e.toString())],
         ),
         const SizedBox(height: 12),
-        const FilledButton(
-            onPressed: main, child: Text('إعادة المحاولة / Retry')),
+        FilledButton(
+            onPressed: () => main(arguments),
+            child: const Text('إعادة المحاولة / Retry')),
       ]),
     )))));
   } finally {
@@ -84,8 +88,14 @@ void main() async {
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key, required this.auth, this.warehouse, this.shop});
+  const MyApp(
+      {super.key,
+      required this.auth,
+      this.warehouse,
+      this.shop,
+      this.profile = const AppProfile()});
   final AuthService auth;
+  final AppProfile profile;
   final WarehouseProvider? warehouse;
   final ShopProvider? shop;
 
@@ -93,6 +103,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
+        Provider<AppProfile>.value(value: profile),
         ChangeNotifierProvider<AuthService>.value(value: auth),
         ChangeNotifierProvider(
             create: (_) => ProductionProvider(
@@ -108,7 +119,35 @@ class MyApp extends StatelessWidget {
         builder: (context, langProvider, session, child) {
           return MaterialApp(
             key: ValueKey(session.user?['id'] ?? 'signed-out'),
-            title: 'Detergent Factory',
+            title: profile.isTest
+                ? 'Detergent Factory - TEST'
+                : 'Detergent Factory',
+            builder: profile.isTest
+                ? (context, child) => Column(children: [
+                      Material(
+                          color: const Color(0xFFFFEDC2),
+                          child: SafeArea(
+                            bottom: false,
+                            child: SizedBox(
+                                width: double.infinity,
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 16, vertical: 6),
+                                  child: Text(
+                                      langProvider.appLocale.languageCode ==
+                                              'ar'
+                                          ? 'وضع تجريبي — بيانات منفصلة عن العمل الفعلي'
+                                          : 'TEST WORKSPACE — separate from your business data',
+                                      key:
+                                          const ValueKey('test-profile-banner'),
+                                      textAlign: TextAlign.center,
+                                      style: const TextStyle(
+                                          color: Color(0xFF624000))),
+                                )),
+                          )),
+                      Expanded(child: child!),
+                    ])
+                : null,
             debugShowCheckedModeBanner: false,
             locale: langProvider.appLocale,
             supportedLocales: AppLocalizations.supportedLocales,

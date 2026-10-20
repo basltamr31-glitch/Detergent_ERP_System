@@ -1,5 +1,13 @@
 # ERP development phases
 
+## Windows access phase — separate trial workspace 1.1.1 (20 October 2026)
+
+The reported screenshot shows a running app rejecting a local username/password. Adds explicit trial access through START-TEST.cmd or the regular Windows login's Open test workspace button. The trial workspace provisions an owner-level tester account once, uses normal salted password verification, preserves its own records and displays a persistent TEST banner. It has an independent local-support data directory and native mutex; business data/accounts are not reset or copied. Changed test passwords remain changed.
+
+Corrects a null-ID comparison that marked newly created users signed in before password verification. The runner resolves assets beside the executable and reports an incomplete extraction. New tests cover isolated storage, account provisioning/restart, original business-state preservation, no production tester account and both shortcut/manual tester login through the real app/dashboard. Existing native login tests also exercise trial launch dispatch and the invalid-credential explanation. Windows packaging includes the launcher and bilingual instructions. The existing Android/Chromebook package remains 1.1.0+8.
+
+Verification: all 132 named automated tests passed and static analysis reports no issues. Windows x64 release compiled successfully. The offline checklist contains 125 manual cases and the full captured automated inventory; its persistence, filters, exports/imports and narrow layout passed isolated Chrome checks. The native Windows dialog/process launch is mocked in automated tests; physical Windows acceptance remains to be confirmed on the user's computer. No live business data was opened during development.
+
 ## Phase 1 — ERP dashboard and navigation (13 October 2026)
 
 Replaced the long button menu with a responsive workspace. Overview cards show active posted sales, customer/supplier document balances and ledger cash by selected currency. Production approval/quality queues, period closure, financial reconciliation status and recent documents provide context for daily work. Modules are grouped into daily operations and reports/controls, preserving Cairo, Arabic/English and the existing module colors. Readiness/recovery states avoid presenting an unloaded store as zero balances. Admin and backup routes remain role-aware.
