@@ -16,6 +16,25 @@ const {chromium} = require('playwright');
     page.on('pageerror', error => errors.push(error.message));
     await page.goto(pathToFileURL(input).href);
     const data = JSON.parse(await page.locator('#test-data').textContent());
+    const arabic = data.locale === 'ar';
+    const importedText = arabic ? 'تم استيراد النتائج.' : 'Results imported.';
+    const rejectedText = arabic ? 'رُفض الاستيراد: ' : 'Import rejected';
+    assert.equal(await page.locator('html').getAttribute('lang'), arabic ? 'ar' : 'en');
+    if (arabic) {
+      assert.equal(await page.locator('html').getAttribute('dir'), 'rtl');
+      assert(data.manual.every(c => /[\u0600-\u06ff]/.test(c.title) && c.steps.every(step => /[\u0600-\u06ff]/.test(step)) && /[\u0600-\u06ff]/.test(c.expected)));
+      assert(data.automated.every(t => /[\u0600-\u06ff]/.test(t.displayName)));
+      assert.match(await page.locator('#export-approval').textContent(), /تصدير تقرير الاعتماد/);
+      assert.doesNotMatch(await page.locator('body').innerText(), /Before testing|Current version|Expected:|Approval scope:|manual cases|applicable cases/);
+      if (process.argv.includes('--screenshots')) {
+        const output = path.resolve(__dirname, '../build');
+        await fs.mkdir(output, {recursive: true});
+        await page.screenshot({path: path.join(output, 'acceptance_ar_preview.png')});
+        await page.locator('#walkthrough-base').evaluate(element => {element.open = true;});
+        await page.locator('#walkthrough-base').screenshot({path: path.join(output, 'acceptance_ar_cycle.png')});
+        await page.locator('#walkthrough-base').evaluate(element => {element.open = false;});
+      }
+    }
     assert.equal(data.manual.length, 133);
     assert.equal(data.automated.length, 132);
     assert(data.automated.every(test => test.result === 'success' && !test.skipped));
@@ -29,7 +48,7 @@ const {chromium} = require('playwright');
     await page.locator('#tester').fill('SYNTHETIC UI TEST — not acceptance evidence');
     await page.locator('#device').fill('Isolated headless test context');
     await page.locator('#test-date').fill('2026-10-20');
-    await page.locator('[aria-label="TC-060 result"]').selectOption('fail');
+    await page.locator('[data-test-id="TC-060"] .case-status').selectOption('fail');
     await page.locator('#platform').selectOption('ChromeOS');
     assert.equal(await page.evaluate(() => acceptanceAssessment().counts.fail), 1, 'Filtering must not hide a Windows-scope failure');
     await page.locator('#platform').selectOption('all');
@@ -55,18 +74,18 @@ const {chromium} = require('playwright');
     assert.match(await page.locator('#approval-issues').textContent(), /TC-071/);
     await page.evaluate(() => {state.results['TC-071'].notes = 'SYNTHETIC reference'; save(); render();});
 
-    await page.locator('[aria-label="TC-033 result"]').selectOption('na');
+    await page.locator('[data-test-id="TC-033"] .case-status').selectOption('na');
     assert.equal(await page.locator('#approval-state').getAttribute('data-state'), 'scope-review');
     await page.evaluate(() => {state.results['TC-033'].notes = ''; save(); render();});
     assert.equal(await page.locator('#approval-state').getAttribute('data-state'), 'not-ready');
     await page.evaluate(() => {state.results['TC-033'] = {status: 'pass', notes: 'SYNTHETIC'}; save(); render();});
-    await page.locator('[aria-label="TC-060 result"]').selectOption('na');
+    await page.locator('[data-test-id="TC-060"] .case-status').selectOption('na');
     assert.equal(await page.locator('#approval-state').getAttribute('data-state'), 'not-ready', 'Core sales cannot be excluded from approval');
     for (const status of ['fail', 'blocked', 'pending']) {
-      await page.locator('[aria-label="TC-060 result"]').selectOption(status);
+      await page.locator('[data-test-id="TC-060"] .case-status').selectOption(status);
       assert.equal(await page.locator('#approval-state').getAttribute('data-state'), 'not-ready');
     }
-    await page.locator('[aria-label="TC-060 result"]').selectOption('pass');
+    await page.locator('[data-test-id="TC-060"] .case-status').selectOption('pass');
     assert.equal(await page.locator('#approval-state').getAttribute('data-state'), 'ready');
     await page.reload();
     assert.equal(await page.locator('#approval-state').getAttribute('data-state'), 'ready', 'Synthetic UI results persist within the disposable context');
@@ -82,7 +101,7 @@ const {chromium} = require('playwright');
     const csv = await fs.readFile(await download('export-csv'), 'utf8');
     assert(csv.startsWith('\ufeff'));
     assert.equal(csv.split('\r\n').length, 134);
-    assert.match(csv.split('\r\n')[0], /Approval platform/);
+    assert.match(csv.split('\r\n')[0], arabic ? /منصة الاعتماد/ : /Approval platform/);
 
     const hostileNote = '<img src=x onerror="window.unsafeApproval=true"> — SYNTHETIC';
     await page.evaluate(note => {state.results['TC-071'].notes = note; save(); render();}, hostileNote);
@@ -96,21 +115,44 @@ const {chromium} = require('playwright');
     assert((await report.locator('body').textContent()).includes(hostileNote));
     assert.equal(await report.locator('img').count(), 0, 'Notes must remain text in the exported report');
     assert.equal(await report.evaluate(() => window.unsafeApproval), undefined);
-    assert.match(await report.locator('body').textContent(), /other platform|Other platform/);
+    assert.match(await report.locator('body').textContent(), arabic ? /منصة أخرى|المنصة الأخرى/ : /other platform|Other platform/);
+    if (arabic) {
+      assert.equal(await report.locator('html').getAttribute('lang'), 'ar');
+      assert.equal(await report.locator('html').getAttribute('dir'), 'rtl');
+      assert.match(await report.locator('body').textContent(), /جاهز للمراجعة والاعتماد/);
+    }
     await report.close();
 
     await page.locator('#import-file').setInputFiles({name: 'synthetic.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(exported))});
-    await page.waitForFunction(() => document.getElementById('notification').textContent === 'Results imported.');
+    await page.waitForFunction(expected => document.getElementById('notification').textContent === expected, importedText);
     assert.equal(await page.locator('#approval-state').getAttribute('data-state'), 'ready');
+    if (arabic) {
+      const peer = await context.newPage();
+      peer.on('pageerror', error => errors.push(error.message));
+      const englishFile = input.replace(/_AR\.html$/, '.html');
+      assert.notEqual(englishFile, input, 'Arabic artifact must have an _AR suffix for paired-locale testing');
+      await peer.goto(pathToFileURL(englishFile).href);
+      await peer.locator('#import-file').setInputFiles({name: 'arabic-results.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(exported))});
+      await peer.waitForFunction(() => document.getElementById('notification').textContent === 'Results imported.');
+      assert.equal(await peer.locator('#approval-state').getAttribute('data-state'), 'ready');
+      const englishResults = await peer.evaluate(() => resultExport());
+      englishResults.results['TC-071'].notes = 'مرجع عربي تجريبي فقط لاختبار نقل النتائج بين اللغتين';
+      await page.locator('#import-file').setInputFiles({name: 'english-results.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(englishResults))});
+      await page.waitForFunction(expected => document.getElementById('notification').textContent === expected, importedText);
+      assert.equal(await page.evaluate(() => safeResult('TC-071').notes), englishResults.results['TC-071'].notes);
+      assert.equal(await page.locator('#approval-state').getAttribute('data-state'), 'ready');
+      assert.match(await page.locator('[data-test-id="TC-071"] summary').textContent(), /مطابقة دورة الشراء/);
+      await peer.close();
+    }
     const legacy = structuredClone(exported);
     for (const id of Object.keys(legacy.results)) if (Number(id.slice(3)) > 125) delete legacy.results[id];
     legacy.assessment = {status: 'ready'}; // Imported claims are never trusted.
     await page.locator('#import-file').setInputFiles({name: 'old-125.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(legacy))});
-    await page.waitForFunction(() => document.getElementById('notification').textContent === 'Results imported.');
+    await page.waitForFunction(expected => document.getElementById('notification').textContent === expected, importedText);
     assert.equal(await page.locator('#approval-state').getAttribute('data-state'), 'not-ready');
     assert.equal(await page.evaluate(() => acceptanceAssessment().counts.pending), 8);
     await page.locator('#import-file').setInputFiles({name: 'bad.json', mimeType: 'application/json', buffer: Buffer.from('{"format":"wrong"}')});
-    await page.waitForFunction(() => document.getElementById('notification').textContent.startsWith('Import rejected'));
+    await page.waitForFunction(expected => document.getElementById('notification').textContent.startsWith(expected), rejectedText);
 
     await page.locator('#approval-platform').selectOption('ChromeOS');
     await page.locator('#installed').fill('1.1.0+8');

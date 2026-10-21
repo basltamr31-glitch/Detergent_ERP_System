@@ -29,6 +29,8 @@ Open **ERP_Full_Acceptance_1.1.1.html** for **133 manual acceptance cases**, sev
 
 The original Windows 1.1.1 ZIP retains its earlier 125-case checklist; the expanded full acceptance HTML is a separate, self-contained file and needs no app rebuild. Import earlier 1.1.1 results JSON to preserve observations; the eight new cases remain pending. Filter by phase/platform/category, record actual results and export JSON after each session. The file records user observations and cannot inspect or automatically approve the ERP database.
 
+An entirely Arabic edition is available as **ERP_Full_Acceptance_1.1.1_AR.html**: all133 manual cases, seven walkthroughs,132 automated display names, permission/scope tables, controls and exported approval reports are translated with RTL layout. Case IDs, statuses in JSON, amounts, builds and captured automated evidence are preserved. Results JSON can move between the Arabic and English editions; technical names/file paths remain available for troubleshooting.
+
 Generated APK/ZIP/HTML files live under ignored `artifacts/` in the build workspace. Source catalogs and scripts are tracked under `qa/` and `scripts/`; binaries are not repository downloads. Review the [release guide](RELEASE_GUIDE.md) before installation/upgrades. See [development phases](DEVELOPMENT_PHASES.md) for verification history.
 
 ## Build from source
@@ -60,6 +62,8 @@ python scripts/generate-test-pack.py
 The generator consumes completed Flutter machine output, validates the manual catalog and walkthrough coverage, and embeds the actual automated outcomes and analyzer status. It records log hashes and snapshot time in `qa/automated_inventory.json` and the HTML; unchanged source logs keep the original capture time. The latest suite contains 132 tests with clean static analysis; mocks/temporary stores do not replace physical-device testing.
 
 Generate the full acceptance artifact with `--output artifacts/ERP_Full_Acceptance_1.1.1.html` and the appropriate `--results`/`--analysis` log paths. Its standalone HTML inlines `qa/acceptance_plan.json` and `qa/acceptance_ui.js`. With Playwright and Chrome available, `node scripts/verify-acceptance-pack.cjs` verifies the checklist's approval rules, platform scope, required observations, backward-compatible import, safe report generation and narrow layout using disposable synthetic results only. It does not mark any real manual case passed.
+
+Add `--locale ar --output artifacts/ERP_Full_Acceptance_1.1.1_AR.html` to generate the Arabic edition from the checked translations in `qa/ar/`. The generator validates all translated IDs/phases/categories and verifies that the Arabic role matrix does not change permissions. Run `node scripts/verify-acceptance-pack.cjs artifacts/ERP_Full_Acceptance_1.1.1_AR.html` to verify RTL, the translated report and bidirectional JSON-result exchange; keep the English artifact beside it for that developer check. Optional `--screenshots` captures Arabic previews under ignored `build/`.
 
 See [the warehouse1.1 upgrade and operating guide (Arabic)](WAREHOUSE_UPGRADE_GUIDE_AR.md) before using the new migration and purchasing/production flows. Physical-device acceptance remains necessary; costs are recorded explicitly, not inferred as perpetual inventory valuation.
 

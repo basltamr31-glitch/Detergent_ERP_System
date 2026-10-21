@@ -1,5 +1,11 @@
 # ERP development phases
 
+## Acceptance localization — complete Arabic edition (20 October 2026)
+
+Adds an RTL Arabic acceptance file with translations of all133 case titles/steps/expectations, the seven walkthroughs/checkpoint tables,132 automated display titles, the role/coverage/remaining-scope tables, controls, validation messages and exported approval report. Original technical test names remain in metadata for traceability. Build-time localization preserves IDs, machine result enums, currency amounts, build numbers and the original automated snapshot. The generator validates translation coverage and identical permission matrices. Technical build/date/file tokens are isolated visually without adding hidden characters to copied values.
+
+Verification covers the Arabic approval gates, UTF-8 exports/imports, safe report escaping, RTL report metadata, narrow layout, and result exchange to English and back with Arabic notes intact. Arabic desktop/walkthrough renders were inspected. The default English artifact remains byte-for-byte identical. All test observations were synthetic in a disposable browser context and discarded; no application binary or live business data changed and no manual acceptance was approved for the user.
+
 ## Acceptance phase — full implemented-workflow sign-off (20 October 2026)
 
 Expands the manual catalog from125 to133 checks with active-ingredient percentages, Arabic decimals, draft-row deletion, duplicate SKU protection, exact decimal settlement, form cancellation, restore/account separation and multipage Arabic PDFs. Seven ordered walkthroughs specify safe test setup, purchase-to-cash figures, mixed-source manufacturing/trading FIFO, cost-estimate arithmetic, permissions, rejections/corrections and backup/device acceptance. Every catalog case maps to a phase and module/screens.

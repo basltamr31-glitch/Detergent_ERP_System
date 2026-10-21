@@ -8,6 +8,7 @@ parser=argparse.ArgumentParser()
 parser.add_argument('--results',default='build/current_tests.jsonl')
 parser.add_argument('--analysis',default='build/chromebook_analysis.log')
 parser.add_argument('--output')
+parser.add_argument('--locale', choices=['en', 'ar'], default='en')
 args=parser.parse_args()
 root=Path(__file__).resolve().parent.parent
 manual=json.loads((root/'qa/manual_cases.json').read_text(encoding='utf-8'))
@@ -57,6 +58,9 @@ if inventory_path.exists():
     if all(previous.get(key)==verification[key] for key in ['resultsSha256','analysisSha256']):
         verification['capturedAt']=previous['capturedAt']
 data={'release':manual['version'],'manual':manual['cases'],'preparation':manual['preparation'],'automated':automated,'verification':verification,'plan':plan}
+if args.locale == 'ar':
+    from acceptance_localization import arabic_data
+    data=arabic_data(root, data)
 blob=json.dumps(data,ensure_ascii=False).replace('</','<'+chr(92)+'/')
 acceptance_ui=(root/'qa/acceptance_ui.js').read_text(encoding='utf-8')
 template=r'''<!doctype html>
@@ -104,8 +108,13 @@ $('print').onclick=()=>{document.querySelectorAll('#cases details').forEach(x=>x
 const passed=data.automated.filter(t=>t.result==='success'&&!t.skipped).length;$('auto-summary').textContent=passed+' passed of '+data.automated.length+' captured tests. Static analysis: '+data.verification.analysisStatus+'. Snapshot: '+data.verification.capturedAt+'.';
 for(const test of data.automated){const tr=document.createElement('tr'),name=document.createElement('td'),file=document.createElement('td'),result=document.createElement('td');name.textContent=test.name;const a=document.createElement('a');a.href='https://github.com/basltamr31-glitch/Detergent_ERP_System/blob/master/'+test.file;a.textContent=test.file;file.append(a);result.textContent=test.skipped?'skipped':test.result;tr.append(name,file,result);$('auto-tests').append(tr)}render();
 </script></body></html>'''
-output=root/(args.output or f'artifacts/ERP_Test_Pack_{manual["version"].split("+")[0]}.html')
+template=template.replace('__ACCEPTANCE_JS__',acceptance_ui)
+if args.locale == 'ar':
+    from acceptance_localization import arabic_template
+    template=arabic_template(root, template)
+suffix='_AR' if args.locale=='ar' else ''
+output=root/(args.output or f'artifacts/ERP_Test_Pack_{manual["version"].split("+")[0]}{suffix}.html')
 output.parent.mkdir(parents=True,exist_ok=True)
-output.write_text(template.replace('__ACCEPTANCE_JS__',acceptance_ui).replace('__DATA__',blob).replace('__VERSION__',manual['version']),encoding='utf-8')
+output.write_text(template.replace('__DATA__',blob).replace('__VERSION__',manual['version']),encoding='utf-8')
 (root/'qa/automated_inventory.json').write_text(json.dumps({'version':manual['version'],'verification':verification,'tests':automated},ensure_ascii=False,indent=2),encoding='utf-8')
 print(f'Generated {output}: {len(data["manual"])} manual scenarios and {len(automated)} actual automated tests.')

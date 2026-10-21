@@ -1,5 +1,9 @@
 # ERP release guide
 
+## Arabic acceptance edition
+
+Open ERP_Full_Acceptance_1.1.1_AR.html for the complete Arabic/RTL edition of the133-case full acceptance file. All manual instructions, expected figures, walkthroughs, display names of the132 captured automated tests, controls and the exported report are localized. Test IDs and JSON result statuses remain compatible with the English edition; import a previous results JSON to continue with the same observations. The source evidence timestamp/checksums and app binaries remain unchanged. Use the same TEST-workspace precautions and approval criteria as the English edition.
+
 ## Full acceptance file for Windows1.1.1 / ChromeOS1.1.0
 
 ERP_Full_Acceptance_1.1.1.html is a separate, self-contained acceptance artifact:133 manual cases, seven ordered examples, expected cash/stock/costing tables, permission matrix, screen/module coverage and an exportable sign-off report. Start in the TEST workspace and follow the phases before running independent returns/rejection cases. Record actual checkpoint figures and export JSON after each session. Earlier1.1.1 results imports preserve existing observations and leave the eight new cases pending.
